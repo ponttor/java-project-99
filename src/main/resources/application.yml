@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: app
+  profiles:
+    default: development
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+server:
+  port: ${PORT:8080}
