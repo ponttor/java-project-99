@@ -1,7 +1,6 @@
 package hexlet.code.app.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import hexlet.code.app.dto.UserCreateRequest;
 import hexlet.code.app.dto.UserResponse;
@@ -28,9 +27,8 @@ public class UserService {
                 .toList();
     }
 
-    public Optional<UserResponse> findById(Long id) {
-        return userRepository.findById(id)
-                .map(UserResponse::new);
+    public UserResponse findById(Long id) {
+        return new UserResponse(findUser(id));
     }
 
     public UserResponse create(UserCreateRequest request) {
