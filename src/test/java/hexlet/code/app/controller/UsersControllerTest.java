@@ -21,10 +21,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@WithMockUser(username = "hexlet@example.com")
 class UsersControllerTest {
 
     @Autowired
@@ -45,6 +48,13 @@ class UsersControllerTest {
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
+    }
+
+    @Test
+    @WithAnonymousUser
+    void shouldRequireAuthenticationForUsers() throws Exception {
+        mockMvc.perform(get("/api/users"))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -101,6 +111,7 @@ class UsersControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "jack@google.com")
     void shouldUpdateUserPartially() throws Exception {
         var user = userRepository.save(buildUser("jack@google.com", "Jack", "Jons", "password"));
 
@@ -123,6 +134,7 @@ class UsersControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "john@google.com")
     void shouldDeleteUser() throws Exception {
         var user = userRepository.save(buildUser("john@google.com", "John", "Doe", "password"));
 
