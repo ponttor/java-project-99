@@ -8,6 +8,7 @@ import hexlet.code.app.dto.UserUpdateRequest;
 import hexlet.code.app.model.User;
 import hexlet.code.app.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -64,7 +65,12 @@ public class UserService {
     }
 
     public void delete(Long id) {
-        userRepository.delete(findUser(id));
+        try {
+            userRepository.delete(findUser(id));
+            userRepository.flush();
+        } catch (DataIntegrityViolationException exception) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User is assigned to a task", exception);
+        }
     }
 
     private User findUser(Long id) {
