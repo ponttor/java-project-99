@@ -1,6 +1,10 @@
 package hexlet.code.app.component;
 
+import java.util.Map;
+
+import hexlet.code.app.model.TaskStatus;
 import hexlet.code.app.model.User;
+import hexlet.code.app.repository.TaskStatusRepository;
 import hexlet.code.app.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -13,20 +17,55 @@ public class DataInitializer implements CommandLineRunner {
 
     private static final String ADMIN_EMAIL = "hexlet@example.com";
 
+    private static final Map<String, String> DEFAULT_TASK_STATUSES = Map.of(
+            "draft", "Draft",
+            "to_review", "To Review",
+            "to_be_fixed", "To Be Fixed",
+            "to_publish", "To Publish",
+            "published", "Published"
+    );
+
     private final UserRepository userRepository;
+
+    private final TaskStatusRepository taskStatusRepository;
 
     private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) {
-        if (userRepository.existsByEmail(ADMIN_EMAIL)) {
-            return;
+        if (!userRepository.existsByEmail(ADMIN_EMAIL)) {
+            var user = new User();
+            user.setEmail(ADMIN_EMAIL);
+            user.setPassword(passwordEncoder.encode("qwerty"));
+
+            userRepository.save(user);
         }
 
-        var user = new User();
-        user.setEmail(ADMIN_EMAIL);
-        user.setPassword(passwordEncoder.encode("qwerty"));
+        DEFAULT_TASK_STATUSES.forEach((slug, name) -> {
+            if (taskStatusRepository.findBySlug(slug).isEmpty()) {
+                var taskStatus = new TaskStatus();
+                taskStatus.setName(findAvailableName(name, slug));
+                taskStatus.setSlug(slug);
 
-        userRepository.save(user);
+                taskStatusRepository.save(taskStatus);
+            }
+        });
+    }
+
+    private String findAvailableName(String preferredName, String slug) {
+        if (!taskStatusRepository.existsByName(preferredName)) {
+            return preferredName;
+        }
+
+        var baseName = preferredName + " (" + slug + ")";
+        var availableName = baseName;
+        var suffix = 2;
+
+        while (taskStatusRepository.existsByName(availableName)) {
+            availableName = baseName + " " + suffix;
+            suffix++;
+        }
+
+        return availableName;
     }
 }
