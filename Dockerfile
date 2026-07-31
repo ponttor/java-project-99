@@ -1,7 +1,8 @@
 FROM gradle:jdk21 AS build
 WORKDIR /app
 COPY . .
-RUN ./gradlew bootJar
+ARG SENTRY_AUTH_TOKEN
+RUN ./gradlew build
 
 FROM eclipse-temurin:21-jre
 WORKDIR /app
