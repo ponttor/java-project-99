@@ -1,6 +1,7 @@
 package hexlet.code.app.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,6 +27,8 @@ public class TaskResponse {
 
     private final String status;
 
+    private final List<Long> taskLabelIds;
+
     public TaskResponse(Task task) {
         this.id = task.getId();
         this.index = task.getIndex();
@@ -34,5 +37,8 @@ public class TaskResponse {
         this.title = task.getName();
         this.content = task.getDescription();
         this.status = task.getTaskStatus().getSlug();
+        this.taskLabelIds = task.getLabels().stream()
+                .map(label -> label.getId())
+                .toList();
     }
 }

@@ -1,9 +1,12 @@
 package hexlet.code.app.component;
 
 import java.util.Map;
+import java.util.Set;
 
+import hexlet.code.app.model.Label;
 import hexlet.code.app.model.TaskStatus;
 import hexlet.code.app.model.User;
+import hexlet.code.app.repository.LabelRepository;
 import hexlet.code.app.repository.TaskStatusRepository;
 import hexlet.code.app.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +28,13 @@ public class DataInitializer implements CommandLineRunner {
             "published", "Published"
     );
 
+    private static final Set<String> DEFAULT_LABELS = Set.of("feature", "bug");
+
     private final UserRepository userRepository;
 
     private final TaskStatusRepository taskStatusRepository;
+
+    private final LabelRepository labelRepository;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -48,6 +55,14 @@ public class DataInitializer implements CommandLineRunner {
                 taskStatus.setSlug(slug);
 
                 taskStatusRepository.save(taskStatus);
+            }
+        });
+
+        DEFAULT_LABELS.forEach(name -> {
+            if (labelRepository.findByName(name).isEmpty()) {
+                var label = new Label();
+                label.setName(name);
+                labelRepository.save(label);
             }
         });
     }

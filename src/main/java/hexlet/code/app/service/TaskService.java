@@ -1,13 +1,18 @@
 package hexlet.code.app.service;
 
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import hexlet.code.app.dto.TaskCreateRequest;
 import hexlet.code.app.dto.TaskResponse;
 import hexlet.code.app.dto.TaskUpdateRequest;
+import hexlet.code.app.model.Label;
 import hexlet.code.app.model.Task;
 import hexlet.code.app.model.TaskStatus;
 import hexlet.code.app.model.User;
+import hexlet.code.app.repository.LabelRepository;
 import hexlet.code.app.repository.TaskRepository;
 import hexlet.code.app.repository.TaskStatusRepository;
 import hexlet.code.app.repository.UserRepository;
@@ -28,8 +33,14 @@ public class TaskService {
 
     private final UserRepository userRepository;
 
-    public List<TaskResponse> findAll() {
-        return taskRepository.findAll().stream()
+    private final LabelRepository labelRepository;
+
+    public List<TaskResponse> findAll(Long labelId) {
+        var tasks = labelId == null
+                ? taskRepository.findAll()
+                : taskRepository.findAllByLabelsId(labelId);
+
+        return tasks.stream()
                 .map(TaskResponse::new)
                 .toList();
     }
@@ -44,6 +55,7 @@ public class TaskService {
         task.setName(request.getTitle());
         task.setDescription(request.getContent());
         task.setTaskStatus(findTaskStatus(request.getStatus()));
+        task.setLabels(findLabels(request.getTaskLabelIds()));
 
         if (request.getAssigneeId() != null) {
             task.setAssignee(findAssignee(request.getAssigneeId()));
@@ -77,6 +89,10 @@ public class TaskService {
             task.setTaskStatus(findTaskStatus(request.getStatus()));
         }
 
+        if (request.isTaskLabelIdsPresent()) {
+            task.setLabels(findLabels(request.getTaskLabelIds()));
+        }
+
         return new TaskResponse(taskRepository.save(task));
     }
 
@@ -97,5 +113,20 @@ public class TaskService {
     private User findAssignee(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignee not found"));
+    }
+
+    private LinkedHashSet<Label> findLabels(List<Long> ids) {
+        var labelsById = labelRepository.findAllById(ids).stream()
+                .collect(Collectors.toMap(Label::getId, Function.identity()));
+
+        return ids.stream()
+                .map(id -> {
+                    var label = labelsById.get(id);
+                    if (label == null) {
+                        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Label not found");
+                    }
+                    return label;
+                })
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 }

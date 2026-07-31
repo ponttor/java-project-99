@@ -1,5 +1,7 @@
 package hexlet.code.app.dto;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import jakarta.validation.constraints.Size;
@@ -20,6 +22,8 @@ public class TaskUpdateRequest {
     @Size(min = 1)
     private String status;
 
+    private List<Long> taskLabelIds;
+
     private boolean indexPresent;
 
     private boolean assigneeIdPresent;
@@ -29,6 +33,8 @@ public class TaskUpdateRequest {
     private boolean contentPresent;
 
     private boolean statusPresent;
+
+    private boolean taskLabelIdsPresent;
 
     @JsonSetter
     public void setIndex(Integer index) {
@@ -58,5 +64,11 @@ public class TaskUpdateRequest {
     public void setStatus(String status) {
         this.status = status;
         this.statusPresent = true;
+    }
+
+    @JsonSetter(nulls = Nulls.FAIL)
+    public void setTaskLabelIds(List<Long> taskLabelIds) {
+        this.taskLabelIds = taskLabelIds;
+        this.taskLabelIdsPresent = true;
     }
 }

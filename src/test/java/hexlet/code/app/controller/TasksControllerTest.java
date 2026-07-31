@@ -11,9 +11,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import hexlet.code.app.model.Label;
 import hexlet.code.app.model.Task;
 import hexlet.code.app.model.TaskStatus;
 import hexlet.code.app.model.User;
+import hexlet.code.app.repository.LabelRepository;
 import hexlet.code.app.repository.TaskRepository;
 import hexlet.code.app.repository.TaskStatusRepository;
 import hexlet.code.app.repository.UserRepository;
@@ -28,6 +30,7 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
 import java.util.Map;
 
 @SpringBootTest
@@ -53,6 +56,9 @@ class TasksControllerTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private LabelRepository labelRepository;
+
     private TaskStatus taskStatus;
 
     private User assignee;
@@ -60,6 +66,7 @@ class TasksControllerTest {
     @BeforeEach
     void setUp() {
         taskRepository.deleteAll();
+        labelRepository.deleteAll();
         taskStatusRepository.deleteAll();
         userRepository.deleteAll();
 
@@ -98,6 +105,66 @@ class TasksControllerTest {
     }
 
     @Test
+    void shouldCreateAndUpdateTaskLabels() throws Exception {
+        var bug = labelRepository.save(buildLabel("bug"));
+        var feature = labelRepository.save(buildLabel("feature"));
+        var request = Map.of(
+                "title", "Labelled task",
+                "status", taskStatus.getSlug(),
+                "taskLabelIds", List.of(bug.getId(), feature.getId())
+        );
+
+        var result = mockMvc.perform(post("/api/tasks")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.taskLabelIds", hasSize(2)))
+                .andExpect(jsonPath("$.taskLabelIds[0]").value(bug.getId()))
+                .andExpect(jsonPath("$.taskLabelIds[1]").value(feature.getId()))
+                .andReturn();
+
+        var taskId = objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asLong();
+
+        mockMvc.perform(put("/api/tasks/{id}", taskId)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(Map.of("taskLabelIds", List.of(feature.getId())))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.taskLabelIds", hasSize(1)))
+                .andExpect(jsonPath("$.taskLabelIds[0]").value(feature.getId()));
+
+        mockMvc.perform(put("/api/tasks/{id}", taskId)
+                        .contentType("application/json")
+                        .content("{\"taskLabelIds\":[]}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.taskLabelIds", hasSize(0)));
+    }
+
+    @Test
+    void shouldRejectMissingTaskLabel() throws Exception {
+        var request = Map.of(
+                "title", "Task",
+                "status", taskStatus.getSlug(),
+                "taskLabelIds", List.of(999)
+        );
+
+        mockMvc.perform(post("/api/tasks")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(post("/api/tasks")
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                    "title": "Task",
+                                    "status": "draft",
+                                    "taskLabelIds": null
+                                }
+                                """))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void shouldShowTask() throws Exception {
         var task = taskRepository.save(buildTask("Task 1", "Description", taskStatus, assignee, 3140));
 
@@ -124,6 +191,24 @@ class TasksControllerTest {
                 .andExpect(jsonPath("$[0].title").value("Task 1"))
                 .andExpect(jsonPath("$[1].title").value("Task 2"))
                 .andExpect(jsonPath("$[1].assignee_id").isEmpty());
+    }
+
+    @Test
+    void shouldFilterTasksByLabel() throws Exception {
+        var bug = labelRepository.save(buildLabel("bug"));
+        var feature = labelRepository.save(buildLabel("feature"));
+        var bugTask = buildTask("Bug task", null, taskStatus, null, null);
+        bugTask.setLabels(java.util.Set.of(bug));
+        taskRepository.save(bugTask);
+        var featureTask = buildTask("Feature task", null, taskStatus, null, null);
+        featureTask.setLabels(java.util.Set.of(feature));
+        taskRepository.save(featureTask);
+
+        mockMvc.perform(get("/api/tasks").queryParam("labelId", bug.getId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-Total-Count", "1"))
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].title").value("Bug task"));
     }
 
     @Test
@@ -334,6 +419,12 @@ class TasksControllerTest {
         status.setName(name);
         status.setSlug(slug);
         return status;
+    }
+
+    private Label buildLabel(String name) {
+        var label = new Label();
+        label.setName(name);
+        return label;
     }
 
     private User buildUser(String email) {
