@@ -3,8 +3,8 @@ package hexlet.code.app.config;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import hexlet.code.app.model.User;
 import hexlet.code.app.repository.UserRepository;
+import hexlet.code.app.util.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 @SpringBootTest
 class AuthenticationManagerTest {
@@ -27,16 +26,13 @@ class AuthenticationManagerTest {
     private UserRepository userRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private TestDataFactory testDataFactory;
 
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
 
-        var user = new User();
-        user.setEmail(EMAIL);
-        user.setPassword(passwordEncoder.encode(PASSWORD));
-        userRepository.save(user);
+        userRepository.save(testDataFactory.userWithPassword(EMAIL, PASSWORD));
     }
 
     @Test

@@ -14,11 +14,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import tools.jackson.databind.ObjectMapper;
 import hexlet.code.app.component.DataInitializer;
 import hexlet.code.app.model.Label;
-import hexlet.code.app.model.Task;
-import hexlet.code.app.model.TaskStatus;
 import hexlet.code.app.repository.LabelRepository;
 import hexlet.code.app.repository.TaskRepository;
 import hexlet.code.app.repository.TaskStatusRepository;
+import hexlet.code.app.util.TestDataFactory;
 import java.util.Map;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,6 +51,9 @@ class LabelsControllerTest {
 
     @Autowired
     private DataInitializer dataInitializer;
+
+    @Autowired
+    private TestDataFactory testDataFactory;
 
     @BeforeEach
     void setUp() {
@@ -89,7 +91,7 @@ class LabelsControllerTest {
 
     @Test
     void shouldUpdateAndDeleteLabel() throws Exception {
-        var label = labelRepository.save(buildLabel("old name"));
+        var label = labelRepository.save(testDataFactory.label("old name"));
 
         mockMvc.perform(put("/api/labels/{id}", label.getId())
                         .contentType("application/json")
@@ -106,7 +108,7 @@ class LabelsControllerTest {
 
     @Test
     void shouldRejectInvalidAndDuplicateNames() throws Exception {
-        labelRepository.save(buildLabel("duplicate"));
+        labelRepository.save(testDataFactory.label("duplicate"));
 
         mockMvc.perform(post("/api/labels")
                         .contentType("application/json")
@@ -162,12 +164,9 @@ class LabelsControllerTest {
 
     @Test
     void shouldNotDeleteLabelUsedByTask() throws Exception {
-        var label = labelRepository.save(buildLabel("bug"));
-        var status = taskStatusRepository.save(buildTaskStatus());
-        var task = new Task();
-        task.setName("Task");
-        task.setTaskStatus(status);
-        task.setLabels(java.util.Set.of(label));
+        var label = labelRepository.save(testDataFactory.label("bug"));
+        var status = taskStatusRepository.save(testDataFactory.taskStatus("Draft", "draft"));
+        var task = testDataFactory.taskWithLabels("Task", status, null, label);
         taskRepository.saveAndFlush(task);
 
         mockMvc.perform(delete("/api/labels/{id}", label.getId()))
@@ -178,13 +177,13 @@ class LabelsControllerTest {
 
     @Test
     void shouldFindLabelByUniqueNameAndEnforceUniqueness() {
-        var label = labelRepository.saveAndFlush(buildLabel("feature"));
+        var label = labelRepository.saveAndFlush(testDataFactory.label("feature"));
 
         assertThat(labelRepository.findByName("feature"))
                 .get()
                 .extracting(Label::getId)
                 .isEqualTo(label.getId());
-        var duplicateLabel = buildLabel("feature");
+        var duplicateLabel = testDataFactory.label("feature");
 
         assertThatThrownBy(() -> labelRepository.saveAndFlush(duplicateLabel))
                 .isInstanceOf(DataIntegrityViolationException.class);
@@ -198,18 +197,5 @@ class LabelsControllerTest {
         assertThat(labelRepository.findAll())
                 .extracting(Label::getName)
                 .containsExactlyInAnyOrder("feature", "bug");
-    }
-
-    private Label buildLabel(String name) {
-        var label = new Label();
-        label.setName(name);
-        return label;
-    }
-
-    private TaskStatus buildTaskStatus() {
-        var status = new TaskStatus();
-        status.setName("Draft");
-        status.setSlug("draft");
-        return status;
     }
 }

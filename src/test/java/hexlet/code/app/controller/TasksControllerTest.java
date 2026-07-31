@@ -12,20 +12,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import tools.jackson.databind.ObjectMapper;
 import hexlet.code.app.model.Label;
-import hexlet.code.app.model.Task;
 import hexlet.code.app.model.TaskStatus;
 import hexlet.code.app.model.User;
 import hexlet.code.app.repository.LabelRepository;
 import hexlet.code.app.repository.TaskRepository;
 import hexlet.code.app.repository.TaskStatusRepository;
 import hexlet.code.app.repository.UserRepository;
+import hexlet.code.app.util.TestDataFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -54,7 +53,7 @@ class TasksControllerTest {
     private UserRepository userRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private TestDataFactory testDataFactory;
 
     @Autowired
     private LabelRepository labelRepository;
@@ -70,8 +69,8 @@ class TasksControllerTest {
         taskStatusRepository.deleteAll();
         userRepository.deleteAll();
 
-        taskStatus = taskStatusRepository.save(buildTaskStatus("Draft", "draft"));
-        assignee = userRepository.save(buildUser("worker@example.com"));
+        taskStatus = taskStatusRepository.save(testDataFactory.taskStatus("Draft", "draft"));
+        assignee = userRepository.save(testDataFactory.user("worker@example.com"));
     }
 
     @AfterEach
@@ -106,8 +105,8 @@ class TasksControllerTest {
 
     @Test
     void shouldCreateAndUpdateTaskLabels() throws Exception {
-        var bug = labelRepository.save(buildLabel("bug"));
-        var feature = labelRepository.save(buildLabel("feature"));
+        var bug = labelRepository.save(testDataFactory.label("bug"));
+        var feature = labelRepository.save(testDataFactory.label("feature"));
         var request = Map.of(
                 "title", "Labelled task",
                 "status", taskStatus.getSlug(),
@@ -166,7 +165,7 @@ class TasksControllerTest {
 
     @Test
     void shouldShowTask() throws Exception {
-        var task = taskRepository.save(buildTask("Task 1", "Description", taskStatus, assignee, 3140));
+        var task = taskRepository.save(testDataFactory.task("Task 1", "Description", taskStatus, assignee, 3140));
 
         mockMvc.perform(get("/api/tasks/{id}", task.getId()))
                 .andExpect(status().isOk())
@@ -181,8 +180,8 @@ class TasksControllerTest {
 
     @Test
     void shouldListTasks() throws Exception {
-        taskRepository.save(buildTask("Task 1", "First", taskStatus, assignee, 1));
-        taskRepository.save(buildTask("Task 2", "Second", taskStatus, null, null));
+        taskRepository.save(testDataFactory.task("Task 1", "First", taskStatus, assignee, 1));
+        taskRepository.save(testDataFactory.task("Task 2", "Second", taskStatus, null, null));
 
         mockMvc.perform(get("/api/tasks"))
                 .andExpect(status().isOk())
@@ -195,8 +194,8 @@ class TasksControllerTest {
 
     @Test
     void shouldFilterTasksByTitleSubstring() throws Exception {
-        taskRepository.save(buildTask("Create new version", null, taskStatus, null, null));
-        taskRepository.save(buildTask("Fix login", null, taskStatus, null, null));
+        taskRepository.save(testDataFactory.task("Create new version", taskStatus));
+        taskRepository.save(testDataFactory.task("Fix login", taskStatus));
 
         mockMvc.perform(get("/api/tasks").queryParam("titleCont", "new"))
                 .andExpect(status().isOk())
@@ -207,10 +206,10 @@ class TasksControllerTest {
 
     @Test
     void shouldFilterTasksByAssignee() throws Exception {
-        var anotherAssignee = userRepository.save(buildUser("another-worker@example.com"));
-        taskRepository.save(buildTask("First task", null, taskStatus, assignee, null));
-        taskRepository.save(buildTask("Second task", null, taskStatus, anotherAssignee, null));
-        taskRepository.save(buildTask("Unassigned task", null, taskStatus, null, null));
+        var anotherAssignee = userRepository.save(testDataFactory.user("another-worker@example.com"));
+        taskRepository.save(testDataFactory.task("First task", null, taskStatus, assignee, null));
+        taskRepository.save(testDataFactory.task("Second task", null, taskStatus, anotherAssignee, null));
+        taskRepository.save(testDataFactory.task("Unassigned task", taskStatus));
 
         mockMvc.perform(get("/api/tasks").queryParam("assigneeId", assignee.getId().toString()))
                 .andExpect(status().isOk())
@@ -221,9 +220,9 @@ class TasksControllerTest {
 
     @Test
     void shouldFilterTasksByStatusSlug() throws Exception {
-        var published = taskStatusRepository.save(buildTaskStatus("Published", "published"));
-        taskRepository.save(buildTask("Draft task", null, taskStatus, null, null));
-        taskRepository.save(buildTask("Published task", null, published, null, null));
+        var published = taskStatusRepository.save(testDataFactory.taskStatus("Published", "published"));
+        taskRepository.save(testDataFactory.task("Draft task", taskStatus));
+        taskRepository.save(testDataFactory.task("Published task", published));
 
         mockMvc.perform(get("/api/tasks").queryParam("status", "published"))
                 .andExpect(status().isOk())
@@ -235,13 +234,11 @@ class TasksControllerTest {
 
     @Test
     void shouldFilterTasksByLabel() throws Exception {
-        var bug = labelRepository.save(buildLabel("bug"));
-        var feature = labelRepository.save(buildLabel("feature"));
-        var bugTask = buildTask("Bug task", null, taskStatus, null, null);
-        bugTask.setLabels(java.util.Set.of(bug));
+        var bug = labelRepository.save(testDataFactory.label("bug"));
+        var feature = labelRepository.save(testDataFactory.label("feature"));
+        var bugTask = testDataFactory.taskWithLabels("Bug task", taskStatus, null, bug);
         taskRepository.save(bugTask);
-        var featureTask = buildTask("Feature task", null, taskStatus, null, null);
-        featureTask.setLabels(java.util.Set.of(feature));
+        var featureTask = testDataFactory.taskWithLabels("Feature task", taskStatus, null, feature);
         taskRepository.save(featureTask);
 
         mockMvc.perform(get("/api/tasks").queryParam("labelId", bug.getId().toString()))
@@ -253,10 +250,10 @@ class TasksControllerTest {
 
     @Test
     void shouldCombineAllTaskFilters() throws Exception {
-        var anotherAssignee = userRepository.save(buildUser("filter-worker@example.com"));
-        var published = taskStatusRepository.save(buildTaskStatus("Published", "published"));
-        var bug = labelRepository.save(buildLabel("bug"));
-        var feature = labelRepository.save(buildLabel("feature"));
+        var anotherAssignee = userRepository.save(testDataFactory.user("filter-worker@example.com"));
+        var published = taskStatusRepository.save(testDataFactory.taskStatus("Published", "published"));
+        var bug = labelRepository.save(testDataFactory.label("bug"));
+        var feature = labelRepository.save(testDataFactory.label("feature"));
 
         saveTaskWithLabel("Create new version", published, assignee, bug);
         saveTaskWithLabel("Fix existing version", published, assignee, bug);
@@ -277,9 +274,9 @@ class TasksControllerTest {
 
     @Test
     void shouldUpdateTaskPartially() throws Exception {
-        var task = taskRepository.save(buildTask("Old title", "Old content", taskStatus, assignee, 5));
-        var published = taskStatusRepository.save(buildTaskStatus("Published", "published"));
-        var newAssignee = userRepository.save(buildUser("new-worker@example.com"));
+        var task = taskRepository.save(testDataFactory.task("Old title", "Old content", taskStatus, assignee, 5));
+        var published = taskStatusRepository.save(testDataFactory.taskStatus("Published", "published"));
+        var newAssignee = userRepository.save(testDataFactory.user("new-worker@example.com"));
         var request = Map.of(
                 "title", "New title",
                 "status", published.getSlug(),
@@ -299,7 +296,7 @@ class TasksControllerTest {
 
     @Test
     void shouldClearOptionalTaskFields() throws Exception {
-        var task = taskRepository.save(buildTask("Task", "Content", taskStatus, assignee, 5));
+        var task = taskRepository.save(testDataFactory.task("Task", "Content", taskStatus, assignee, 5));
 
         mockMvc.perform(put("/api/tasks/{id}", task.getId())
                         .contentType("application/json")
@@ -319,7 +316,7 @@ class TasksControllerTest {
 
     @Test
     void shouldDeleteTask() throws Exception {
-        var task = taskRepository.save(buildTask("Task", null, taskStatus, null, null));
+        var task = taskRepository.save(testDataFactory.task("Task", taskStatus));
 
         mockMvc.perform(delete("/api/tasks/{id}", task.getId()))
                 .andExpect(status().isNoContent());
@@ -358,7 +355,7 @@ class TasksControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
 
-        var task = taskRepository.save(buildTask("Task", null, taskStatus, null, null));
+        var task = taskRepository.save(testDataFactory.task("Task", taskStatus));
         mockMvc.perform(put("/api/tasks/{id}", task.getId())
                         .contentType("application/json")
                         .content("{\"title\":null}"))
@@ -410,7 +407,7 @@ class TasksControllerTest {
 
     @Test
     void shouldReturnNotFoundForMissingRelationsOnUpdate() throws Exception {
-        var task = taskRepository.save(buildTask("Task", null, taskStatus, assignee, null));
+        var task = taskRepository.save(testDataFactory.task("Task", null, taskStatus, assignee, null));
 
         mockMvc.perform(put("/api/tasks/{id}", task.getId())
                         .contentType("application/json")
@@ -460,7 +457,7 @@ class TasksControllerTest {
     @Test
     @WithMockUser(username = "worker@example.com")
     void shouldNotDeleteAssignedUser() throws Exception {
-        taskRepository.saveAndFlush(buildTask("Task", null, taskStatus, assignee, null));
+        taskRepository.saveAndFlush(testDataFactory.task("Task", null, taskStatus, assignee, null));
 
         mockMvc.perform(delete("/api/users/{id}", assignee.getId()))
                 .andExpect(status().isConflict());
@@ -470,25 +467,12 @@ class TasksControllerTest {
 
     @Test
     void shouldNotDeleteUsedTaskStatus() throws Exception {
-        taskRepository.saveAndFlush(buildTask("Task", null, taskStatus, null, null));
+        taskRepository.saveAndFlush(testDataFactory.task("Task", taskStatus));
 
         mockMvc.perform(delete("/api/task_statuses/{id}", taskStatus.getId()))
                 .andExpect(status().isConflict());
 
         assertThat(taskStatusRepository.findById(taskStatus.getId())).isPresent();
-    }
-
-    private TaskStatus buildTaskStatus(String name, String slug) {
-        var status = new TaskStatus();
-        status.setName(name);
-        status.setSlug(slug);
-        return status;
-    }
-
-    private Label buildLabel(String name) {
-        var label = new Label();
-        label.setName(name);
-        return label;
     }
 
     private void saveTaskWithLabel(
@@ -497,31 +481,7 @@ class TasksControllerTest {
             User user,
             Label label
     ) {
-        var task = buildTask(name, null, status, user, null);
-        task.setLabels(java.util.Set.of(label));
+        var task = testDataFactory.taskWithLabels(name, status, user, label);
         taskRepository.save(task);
-    }
-
-    private User buildUser(String email) {
-        var user = new User();
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode("password"));
-        return user;
-    }
-
-    private Task buildTask(
-            String name,
-            String description,
-            TaskStatus status,
-            User user,
-            Integer index
-    ) {
-        var task = new Task();
-        task.setName(name);
-        task.setDescription(description);
-        task.setTaskStatus(status);
-        task.setAssignee(user);
-        task.setIndex(index);
-        return task;
     }
 }

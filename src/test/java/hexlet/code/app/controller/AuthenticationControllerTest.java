@@ -4,15 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import hexlet.code.app.model.User;
 import hexlet.code.app.repository.UserRepository;
+import hexlet.code.app.util.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -30,7 +29,7 @@ class AuthenticationControllerTest {
     private UserRepository userRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private TestDataFactory testDataFactory;
 
     @Autowired
     private JwtDecoder jwtDecoder;
@@ -39,10 +38,7 @@ class AuthenticationControllerTest {
     void setUp() {
         userRepository.deleteAll();
 
-        var user = new User();
-        user.setEmail(EMAIL);
-        user.setPassword(passwordEncoder.encode(PASSWORD));
-        userRepository.save(user);
+        userRepository.save(testDataFactory.userWithPassword(EMAIL, PASSWORD));
     }
 
     @Test

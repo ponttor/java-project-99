@@ -7,9 +7,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import tools.jackson.databind.ObjectMapper;
 import hexlet.code.app.dto.UserUpdateRequest;
-import hexlet.code.app.model.User;
 import hexlet.code.app.repository.UserRepository;
 import hexlet.code.app.service.JwtService;
+import hexlet.code.app.util.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,15 +38,18 @@ class UserAuthorizationTest {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private TestDataFactory testDataFactory;
+
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
-        userRepository.save(buildUser(OTHER_EMAIL));
+        userRepository.save(testDataFactory.user(OTHER_EMAIL));
     }
 
     @Test
     void shouldForbidUpdatingAnotherUser() throws Exception {
-        var owner = userRepository.save(buildUser(OWNER_EMAIL));
+        var owner = userRepository.save(testDataFactory.user(OWNER_EMAIL));
         var request = new UserUpdateRequest();
         request.setFirstName("Changed");
 
@@ -59,7 +62,7 @@ class UserAuthorizationTest {
 
     @Test
     void shouldAllowUserToUpdateThemself() throws Exception {
-        var owner = userRepository.save(buildUser(OWNER_EMAIL));
+        var owner = userRepository.save(testDataFactory.user(OWNER_EMAIL));
         var request = new UserUpdateRequest();
         request.setFirstName("Changed");
 
@@ -73,7 +76,7 @@ class UserAuthorizationTest {
 
     @Test
     void shouldForbidDeletingAnotherUser() throws Exception {
-        var owner = userRepository.save(buildUser(OWNER_EMAIL));
+        var owner = userRepository.save(testDataFactory.user(OWNER_EMAIL));
 
         mockMvc.perform(delete("/api/users/{id}", owner.getId())
                         .header(HttpHeaders.AUTHORIZATION, bearerToken(OTHER_EMAIL)))
@@ -82,7 +85,7 @@ class UserAuthorizationTest {
 
     @Test
     void shouldAllowUserToDeleteThemself() throws Exception {
-        var owner = userRepository.save(buildUser(OWNER_EMAIL));
+        var owner = userRepository.save(testDataFactory.user(OWNER_EMAIL));
 
         mockMvc.perform(delete("/api/users/{id}", owner.getId())
                         .header(HttpHeaders.AUTHORIZATION, bearerToken(OWNER_EMAIL)))
@@ -91,11 +94,5 @@ class UserAuthorizationTest {
 
     private String bearerToken(String email) {
         return "Bearer " + jwtService.generateToken(email);
-    }
-
-    private User buildUser(String email) {
-        var user = new User();
-        user.setEmail(email);
-        return user;
     }
 }

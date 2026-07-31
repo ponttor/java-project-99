@@ -17,6 +17,7 @@ import hexlet.code.app.dto.TaskStatusCreateRequest;
 import hexlet.code.app.dto.TaskStatusUpdateRequest;
 import hexlet.code.app.model.TaskStatus;
 import hexlet.code.app.repository.TaskStatusRepository;
+import hexlet.code.app.util.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,9 @@ class TaskStatusesControllerTest {
     @Autowired
     private DataInitializer dataInitializer;
 
+    @Autowired
+    private TestDataFactory testDataFactory;
+
     @BeforeEach
     void setUp() {
         taskStatusRepository.deleteAll();
@@ -51,7 +55,7 @@ class TaskStatusesControllerTest {
     @Test
     @WithAnonymousUser
     void shouldShowTaskStatus() throws Exception {
-        var taskStatus = taskStatusRepository.save(buildTaskStatus("To Review", "to_review"));
+        var taskStatus = taskStatusRepository.save(testDataFactory.taskStatus("To Review", "to_review"));
 
         mockMvc.perform(get("/api/task_statuses/{id}", taskStatus.getId()))
                 .andExpect(status().isOk())
@@ -64,8 +68,8 @@ class TaskStatusesControllerTest {
     @Test
     @WithAnonymousUser
     void shouldListTaskStatuses() throws Exception {
-        taskStatusRepository.save(buildTaskStatus("Draft", "draft"));
-        taskStatusRepository.save(buildTaskStatus("Published", "published"));
+        taskStatusRepository.save(testDataFactory.taskStatus("Draft", "draft"));
+        taskStatusRepository.save(testDataFactory.taskStatus("Published", "published"));
 
         mockMvc.perform(get("/api/task_statuses"))
                 .andExpect(status().isOk())
@@ -95,7 +99,7 @@ class TaskStatusesControllerTest {
     @Test
     @WithMockUser
     void shouldUpdateTaskStatusPartially() throws Exception {
-        var taskStatus = taskStatusRepository.save(buildTaskStatus("Draft", "draft"));
+        var taskStatus = taskStatusRepository.save(testDataFactory.taskStatus("Draft", "draft"));
         var request = new TaskStatusUpdateRequest();
         request.setName("New status");
 
@@ -111,7 +115,7 @@ class TaskStatusesControllerTest {
     @Test
     @WithMockUser
     void shouldDeleteTaskStatus() throws Exception {
-        var taskStatus = taskStatusRepository.save(buildTaskStatus("Draft", "draft"));
+        var taskStatus = taskStatusRepository.save(testDataFactory.taskStatus("Draft", "draft"));
 
         mockMvc.perform(delete("/api/task_statuses/{id}", taskStatus.getId()))
                 .andExpect(status().isNoContent());
@@ -137,7 +141,7 @@ class TaskStatusesControllerTest {
 
     @Test
     void shouldInitializeDefaultSlugWhenDefaultNameIsTaken() {
-        taskStatusRepository.save(buildTaskStatus("Draft", "custom_draft"));
+        taskStatusRepository.save(testDataFactory.taskStatus("Draft", "custom_draft"));
 
         dataInitializer.run();
 
@@ -175,7 +179,7 @@ class TaskStatusesControllerTest {
                         .content(objectMapper.writeValueAsString(createRequest)))
                 .andExpect(status().isBadRequest());
 
-        var taskStatus = taskStatusRepository.save(buildTaskStatus("Draft", "draft"));
+        var taskStatus = taskStatusRepository.save(testDataFactory.taskStatus("Draft", "draft"));
         var updateRequest = new TaskStatusUpdateRequest();
         updateRequest.setSlug("");
 
@@ -188,7 +192,7 @@ class TaskStatusesControllerTest {
     @Test
     @WithMockUser
     void shouldRejectExplicitNullOnUpdate() throws Exception {
-        var taskStatus = taskStatusRepository.save(buildTaskStatus("Draft", "draft"));
+        var taskStatus = taskStatusRepository.save(testDataFactory.taskStatus("Draft", "draft"));
 
         mockMvc.perform(put("/api/task_statuses/{id}", taskStatus.getId())
                         .contentType("application/json")
@@ -205,7 +209,7 @@ class TaskStatusesControllerTest {
 
     @Test
     void shouldFindTaskStatusBySlug() {
-        var taskStatus = taskStatusRepository.save(buildTaskStatus("Draft", "draft"));
+        var taskStatus = taskStatusRepository.save(testDataFactory.taskStatus("Draft", "draft"));
 
         assertThat(taskStatusRepository.findBySlug("draft"))
                 .get()
@@ -215,8 +219,8 @@ class TaskStatusesControllerTest {
 
     @Test
     void shouldRequireUniqueTaskStatusName() {
-        taskStatusRepository.saveAndFlush(buildTaskStatus("Draft", "draft"));
-        var duplicateName = buildTaskStatus("Draft", "another_slug");
+        taskStatusRepository.saveAndFlush(testDataFactory.taskStatus("Draft", "draft"));
+        var duplicateName = testDataFactory.taskStatus("Draft", "another_slug");
 
         assertThatThrownBy(() -> taskStatusRepository.saveAndFlush(duplicateName))
                 .isInstanceOf(DataIntegrityViolationException.class);
@@ -224,17 +228,10 @@ class TaskStatusesControllerTest {
 
     @Test
     void shouldRequireUniqueTaskStatusSlug() {
-        taskStatusRepository.saveAndFlush(buildTaskStatus("Draft", "draft"));
-        var duplicateSlug = buildTaskStatus("Another name", "draft");
+        taskStatusRepository.saveAndFlush(testDataFactory.taskStatus("Draft", "draft"));
+        var duplicateSlug = testDataFactory.taskStatus("Another name", "draft");
 
         assertThatThrownBy(() -> taskStatusRepository.saveAndFlush(duplicateSlug))
                 .isInstanceOf(DataIntegrityViolationException.class);
-    }
-
-    private TaskStatus buildTaskStatus(String name, String slug) {
-        var taskStatus = new TaskStatus();
-        taskStatus.setName(name);
-        taskStatus.setSlug(slug);
-        return taskStatus;
     }
 }

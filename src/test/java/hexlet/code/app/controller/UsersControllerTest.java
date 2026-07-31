@@ -12,10 +12,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import tools.jackson.databind.ObjectMapper;
 import hexlet.code.app.component.DataInitializer;
-import hexlet.code.app.dto.UserCreateRequest;
 import hexlet.code.app.dto.UserUpdateRequest;
-import hexlet.code.app.model.User;
 import hexlet.code.app.repository.UserRepository;
+import hexlet.code.app.util.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +45,9 @@ class UsersControllerTest {
     @Autowired
     private DataInitializer dataInitializer;
 
+    @Autowired
+    private TestDataFactory testDataFactory;
+
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
@@ -60,7 +62,7 @@ class UsersControllerTest {
 
     @Test
     void shouldCreateUser() throws Exception {
-        var request = buildCreateRequest("jack@google.com", "Jack", "Jons", "some-password");
+        var request = testDataFactory.userCreateRequest("jack@google.com", "Jack", "Jons", "some-password");
 
         mockMvc.perform(post("/api/users")
                         .contentType("application/json")
@@ -80,7 +82,7 @@ class UsersControllerTest {
 
     @Test
     void shouldShowUser() throws Exception {
-        var user = userRepository.save(buildUser("john@google.com", "John", "Doe", "password"));
+        var user = userRepository.save(testDataFactory.user("john@google.com", "John", "Doe", "password"));
 
         mockMvc.perform(get("/api/users/{id}", user.getId()))
                 .andExpect(status().isOk())
@@ -99,8 +101,8 @@ class UsersControllerTest {
 
     @Test
     void shouldListUsers() throws Exception {
-        userRepository.save(buildUser("john@google.com", "John", "Doe", "password"));
-        userRepository.save(buildUser("jack@yahoo.com", "Jack", "Jons", "password"));
+        userRepository.save(testDataFactory.user("john@google.com", "John", "Doe", "password"));
+        userRepository.save(testDataFactory.user("jack@yahoo.com", "Jack", "Jons", "password"));
 
         mockMvc.perform(get("/api/users"))
                 .andExpect(status().isOk())
@@ -115,7 +117,7 @@ class UsersControllerTest {
     @Test
     @WithMockUser(username = "jack@google.com")
     void shouldUpdateUserPartially() throws Exception {
-        var user = userRepository.save(buildUser("jack@google.com", "Jack", "Jons", "password"));
+        var user = userRepository.save(testDataFactory.user("jack@google.com", "Jack", "Jons", "password"));
 
         var request = new UserUpdateRequest();
         request.setEmail("jack@yahoo.com");
@@ -138,7 +140,7 @@ class UsersControllerTest {
     @Test
     @WithMockUser(username = "john@google.com")
     void shouldDeleteUser() throws Exception {
-        var user = userRepository.save(buildUser("john@google.com", "John", "Doe", "password"));
+        var user = userRepository.save(testDataFactory.user("john@google.com", "John", "Doe", "password"));
 
         mockMvc.perform(delete("/api/users/{id}", user.getId()))
                 .andExpect(status().isNoContent());
@@ -148,7 +150,7 @@ class UsersControllerTest {
 
     @Test
     void shouldReturnBadRequestForInvalidCreateRequest() throws Exception {
-        var request = buildCreateRequest("invalid-email", "Jack", "Jons", "12");
+        var request = testDataFactory.userCreateRequest("invalid-email", "Jack", "Jons", "12");
 
         mockMvc.perform(post("/api/users")
                         .contentType("application/json")
@@ -158,7 +160,7 @@ class UsersControllerTest {
 
     @Test
     void shouldReturnBadRequestForInvalidUpdateRequest() throws Exception {
-        var user = userRepository.save(buildUser("john@google.com", "John", "Doe", "password"));
+        var user = userRepository.save(testDataFactory.user("john@google.com", "John", "Doe", "password"));
 
         var request = new UserUpdateRequest();
         request.setEmail("invalid-email");
@@ -182,28 +184,5 @@ class UsersControllerTest {
 
         assertThat(admin.getPassword()).isNotEqualTo("qwerty");
         assertThat(passwordEncoder.matches("qwerty", admin.getPassword())).isTrue();
-    }
-
-    private UserCreateRequest buildCreateRequest(String email, String firstName, String lastName, String password) {
-        var request = new UserCreateRequest();
-        request.setEmail(email);
-        request.setFirstName(firstName);
-        request.setLastName(lastName);
-        request.setPassword(password);
-        return request;
-    }
-
-    private User buildUser(
-            String email,
-            String firstName,
-            String lastName,
-            String password
-    ) {
-        var user = new User();
-        user.setEmail(email);
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setPassword(passwordEncoder.encode(password));
-        return user;
     }
 }
