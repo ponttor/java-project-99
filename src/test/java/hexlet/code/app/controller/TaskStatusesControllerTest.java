@@ -216,19 +216,19 @@ class TaskStatusesControllerTest {
     @Test
     void shouldRequireUniqueTaskStatusName() {
         taskStatusRepository.saveAndFlush(buildTaskStatus("Draft", "draft"));
+        var duplicateName = buildTaskStatus("Draft", "another_slug");
 
-        assertThatThrownBy(() ->
-                taskStatusRepository.saveAndFlush(buildTaskStatus("Draft", "another_slug"))
-        ).isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> taskStatusRepository.saveAndFlush(duplicateName))
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
     void shouldRequireUniqueTaskStatusSlug() {
         taskStatusRepository.saveAndFlush(buildTaskStatus("Draft", "draft"));
+        var duplicateSlug = buildTaskStatus("Another name", "draft");
 
-        assertThatThrownBy(() ->
-                taskStatusRepository.saveAndFlush(buildTaskStatus("Another name", "draft"))
-        ).isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> taskStatusRepository.saveAndFlush(duplicateSlug))
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     private TaskStatus buildTaskStatus(String name, String slug) {

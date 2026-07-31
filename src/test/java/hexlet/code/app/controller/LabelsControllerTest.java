@@ -184,7 +184,9 @@ class LabelsControllerTest {
                 .get()
                 .extracting(Label::getId)
                 .isEqualTo(label.getId());
-        assertThatThrownBy(() -> labelRepository.saveAndFlush(buildLabel("feature")))
+        var duplicateLabel = buildLabel("feature");
+
+        assertThatThrownBy(() -> labelRepository.saveAndFlush(duplicateLabel))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 

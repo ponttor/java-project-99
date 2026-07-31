@@ -170,7 +170,7 @@ class UsersControllerTest {
     }
 
     @Test
-    void shouldInitializeAdminUser() throws Exception {
+    void shouldInitializeAdminUser() {
         dataInitializer.run();
 
         assertThat(userRepository.existsByEmail("hexlet@example.com")).isTrue();
