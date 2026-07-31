@@ -30,9 +30,12 @@ public class TasksController {
 
     @GetMapping
     public ResponseEntity<List<TaskResponse>> index(
+            @RequestParam(required = false) String titleCont,
+            @RequestParam(required = false) Long assigneeId,
+            @RequestParam(required = false) String status,
             @RequestParam(required = false) Long labelId
     ) {
-        var tasks = taskService.findAll(labelId);
+        var tasks = taskService.findAll(titleCont, assigneeId, status, labelId);
         return ResponseEntity.ok()
                 .header("X-Total-Count", String.valueOf(tasks.size()))
                 .body(tasks);

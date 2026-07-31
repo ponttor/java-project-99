@@ -35,12 +35,13 @@ public class TaskService {
 
     private final LabelRepository labelRepository;
 
-    public List<TaskResponse> findAll(Long labelId) {
-        var tasks = labelId == null
-                ? taskRepository.findAll()
-                : taskRepository.findAllByLabelsId(labelId);
-
-        return tasks.stream()
+    public List<TaskResponse> findAll(
+            String titleCont,
+            Long assigneeId,
+            String status,
+            Long labelId
+    ) {
+        return taskRepository.findAllByFilters(titleCont, assigneeId, status, labelId).stream()
                 .map(TaskResponse::new)
                 .toList();
     }

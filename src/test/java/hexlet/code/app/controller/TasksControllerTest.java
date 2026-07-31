@@ -194,6 +194,46 @@ class TasksControllerTest {
     }
 
     @Test
+    void shouldFilterTasksByTitleSubstring() throws Exception {
+        taskRepository.save(buildTask("Create new version", null, taskStatus, null, null));
+        taskRepository.save(buildTask("Fix login", null, taskStatus, null, null));
+
+        mockMvc.perform(get("/api/tasks").queryParam("titleCont", "new"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-Total-Count", "1"))
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].title").value("Create new version"));
+    }
+
+    @Test
+    void shouldFilterTasksByAssignee() throws Exception {
+        var anotherAssignee = userRepository.save(buildUser("another-worker@example.com"));
+        taskRepository.save(buildTask("First task", null, taskStatus, assignee, null));
+        taskRepository.save(buildTask("Second task", null, taskStatus, anotherAssignee, null));
+        taskRepository.save(buildTask("Unassigned task", null, taskStatus, null, null));
+
+        mockMvc.perform(get("/api/tasks").queryParam("assigneeId", assignee.getId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-Total-Count", "1"))
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].title").value("First task"));
+    }
+
+    @Test
+    void shouldFilterTasksByStatusSlug() throws Exception {
+        var published = taskStatusRepository.save(buildTaskStatus("Published", "published"));
+        taskRepository.save(buildTask("Draft task", null, taskStatus, null, null));
+        taskRepository.save(buildTask("Published task", null, published, null, null));
+
+        mockMvc.perform(get("/api/tasks").queryParam("status", "published"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-Total-Count", "1"))
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].title").value("Published task"))
+                .andExpect(jsonPath("$[0].status").value("published"));
+    }
+
+    @Test
     void shouldFilterTasksByLabel() throws Exception {
         var bug = labelRepository.save(buildLabel("bug"));
         var feature = labelRepository.save(buildLabel("feature"));
@@ -209,6 +249,30 @@ class TasksControllerTest {
                 .andExpect(header().string("X-Total-Count", "1"))
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].title").value("Bug task"));
+    }
+
+    @Test
+    void shouldCombineAllTaskFilters() throws Exception {
+        var anotherAssignee = userRepository.save(buildUser("filter-worker@example.com"));
+        var published = taskStatusRepository.save(buildTaskStatus("Published", "published"));
+        var bug = labelRepository.save(buildLabel("bug"));
+        var feature = labelRepository.save(buildLabel("feature"));
+
+        saveTaskWithLabel("Create new version", published, assignee, bug);
+        saveTaskWithLabel("Fix existing version", published, assignee, bug);
+        saveTaskWithLabel("Create for another user", published, anotherAssignee, bug);
+        saveTaskWithLabel("Create draft", taskStatus, assignee, bug);
+        saveTaskWithLabel("Create feature", published, assignee, feature);
+
+        mockMvc.perform(get("/api/tasks")
+                        .queryParam("titleCont", "create")
+                        .queryParam("assigneeId", assignee.getId().toString())
+                        .queryParam("status", "published")
+                        .queryParam("labelId", bug.getId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-Total-Count", "1"))
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].title").value("Create new version"));
     }
 
     @Test
@@ -425,6 +489,17 @@ class TasksControllerTest {
         var label = new Label();
         label.setName(name);
         return label;
+    }
+
+    private void saveTaskWithLabel(
+            String name,
+            TaskStatus status,
+            User user,
+            Label label
+    ) {
+        var task = buildTask(name, null, status, user, null);
+        task.setLabels(java.util.Set.of(label));
+        taskRepository.save(task);
     }
 
     private User buildUser(String email) {
