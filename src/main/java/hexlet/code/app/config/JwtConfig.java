@@ -21,9 +21,10 @@ public class JwtConfig {
 
     private static final String HMAC_SHA_256 = "HmacSHA256";
     private static final int MINIMUM_KEY_LENGTH_BYTES = 32;
+    private static final String DEFAULT_SECRET = "local-development-secret-key-change-in-production";
 
     @Bean
-    public SecretKey jwtSecretKey(@Value("${jwt.secret}") String secret) {
+    public SecretKey jwtSecretKey(@Value("${jwt.secret:" + DEFAULT_SECRET + "}") String secret) {
         var keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         if (keyBytes.length < MINIMUM_KEY_LENGTH_BYTES) {
             throw new IllegalArgumentException("JWT secret must contain at least 32 bytes");
