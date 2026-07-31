@@ -5,6 +5,8 @@ import java.util.List;
 import hexlet.code.app.dto.LabelCreateRequest;
 import hexlet.code.app.dto.LabelResponse;
 import hexlet.code.app.dto.LabelUpdateRequest;
+import hexlet.code.app.exception.ResourceNotFoundException;
+import hexlet.code.app.mapper.LabelMapper;
 import hexlet.code.app.model.Label;
 import hexlet.code.app.repository.LabelRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,29 +23,30 @@ public class LabelService {
 
     private final LabelRepository labelRepository;
 
+    private final LabelMapper labelMapper;
+
     @Transactional(readOnly = true)
     public List<LabelResponse> findAll() {
         return labelRepository.findAll().stream()
-                .map(LabelResponse::new)
+                .map(labelMapper::toResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public LabelResponse findById(Long id) {
-        return new LabelResponse(findLabel(id));
+        return labelMapper.toResponse(findLabel(id));
     }
 
     public LabelResponse create(LabelCreateRequest request) {
         ensureNameAvailable(request.getName(), null);
-        var label = new Label();
-        label.setName(request.getName());
+        var label = labelMapper.toEntity(request);
         return save(label);
     }
 
     public LabelResponse update(Long id, LabelUpdateRequest request) {
         var label = findLabel(id);
         ensureNameAvailable(request.getName(), label.getId());
-        label.setName(request.getName());
+        labelMapper.update(request, label);
         return save(label);
     }
 
@@ -58,7 +61,7 @@ public class LabelService {
 
     private Label findLabel(Long id) {
         return labelRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Label not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Label not found"));
     }
 
     private void ensureNameAvailable(String name, Long currentLabelId) {
@@ -71,7 +74,7 @@ public class LabelService {
 
     private LabelResponse save(Label label) {
         try {
-            return new LabelResponse(labelRepository.saveAndFlush(label));
+            return labelMapper.toResponse(labelRepository.saveAndFlush(label));
         } catch (DataIntegrityViolationException exception) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Label name already exists", exception);
         }

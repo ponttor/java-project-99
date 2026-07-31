@@ -3,28 +3,21 @@ package hexlet.code.app.dto;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import hexlet.code.app.model.User;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class UserResponse {
 
-    private final Long id;
+    private Long id;
 
-    private final String email;
+    private String email;
 
-    private final String firstName;
+    private String firstName;
 
-    private final String lastName;
+    private String lastName;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private final LocalDateTime createdAt;
-
-    public UserResponse(User user) {
-        this.id = user.getId();
-        this.email = user.getEmail();
-        this.firstName = user.getFirstName();
-        this.lastName = user.getLastName();
-        this.createdAt = user.getCreatedAt();
-    }
+    private LocalDateTime createdAt;
 }

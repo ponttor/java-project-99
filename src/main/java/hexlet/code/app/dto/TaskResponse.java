@@ -5,40 +5,28 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import hexlet.code.app.model.Task;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class TaskResponse {
 
-    private final Long id;
+    private Long id;
 
-    private final Integer index;
+    private Integer index;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private final LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
     @JsonProperty("assignee_id")
-    private final Long assigneeId;
+    private Long assigneeId;
 
-    private final String title;
+    private String title;
 
-    private final String content;
+    private String content;
 
-    private final String status;
+    private String status;
 
-    private final List<Long> taskLabelIds;
-
-    public TaskResponse(Task task) {
-        this.id = task.getId();
-        this.index = task.getIndex();
-        this.createdAt = task.getCreatedAt();
-        this.assigneeId = task.getAssignee() == null ? null : task.getAssignee().getId();
-        this.title = task.getName();
-        this.content = task.getDescription();
-        this.status = task.getTaskStatus().getSlug();
-        this.taskLabelIds = task.getLabels().stream()
-                .map(label -> label.getId())
-                .toList();
-    }
+    private List<Long> taskLabelIds;
 }

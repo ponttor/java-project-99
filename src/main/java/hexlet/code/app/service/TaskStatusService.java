@@ -5,6 +5,8 @@ import java.util.List;
 import hexlet.code.app.dto.TaskStatusCreateRequest;
 import hexlet.code.app.dto.TaskStatusResponse;
 import hexlet.code.app.dto.TaskStatusUpdateRequest;
+import hexlet.code.app.exception.ResourceNotFoundException;
+import hexlet.code.app.mapper.TaskStatusMapper;
 import hexlet.code.app.model.TaskStatus;
 import hexlet.code.app.repository.TaskStatusRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,35 +21,28 @@ public class TaskStatusService {
 
     private final TaskStatusRepository taskStatusRepository;
 
+    private final TaskStatusMapper taskStatusMapper;
+
     public List<TaskStatusResponse> findAll() {
         return taskStatusRepository.findAll().stream()
-                .map(TaskStatusResponse::new)
+                .map(taskStatusMapper::toResponse)
                 .toList();
     }
 
     public TaskStatusResponse findById(Long id) {
-        return new TaskStatusResponse(findTaskStatus(id));
+        return taskStatusMapper.toResponse(findTaskStatus(id));
     }
 
     public TaskStatusResponse create(TaskStatusCreateRequest request) {
-        var taskStatus = new TaskStatus();
-        taskStatus.setName(request.getName());
-        taskStatus.setSlug(request.getSlug());
-        return new TaskStatusResponse(taskStatusRepository.save(taskStatus));
+        var taskStatus = taskStatusMapper.toEntity(request);
+        return taskStatusMapper.toResponse(taskStatusRepository.save(taskStatus));
     }
 
     public TaskStatusResponse update(Long id, TaskStatusUpdateRequest request) {
         var taskStatus = findTaskStatus(id);
 
-        if (request.getName() != null) {
-            taskStatus.setName(request.getName());
-        }
-
-        if (request.getSlug() != null) {
-            taskStatus.setSlug(request.getSlug());
-        }
-
-        return new TaskStatusResponse(taskStatusRepository.save(taskStatus));
+        taskStatusMapper.update(request, taskStatus);
+        return taskStatusMapper.toResponse(taskStatusRepository.save(taskStatus));
     }
 
     public void delete(Long id) {
@@ -61,6 +56,6 @@ public class TaskStatusService {
 
     private TaskStatus findTaskStatus(Long id) {
         return taskStatusRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task status not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task status not found"));
     }
 }
