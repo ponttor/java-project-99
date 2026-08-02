@@ -10,11 +10,9 @@ import lombok.Getter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TaskStatusUpdateRequest {
 
-    @Size(min = 1)
-    private String name;
+    @Size(min = 1) private String name;
 
-    @Size(min = 1)
-    private String slug;
+    @Size(min = 1) private String slug;
 
     @JsonSetter(nulls = Nulls.FAIL)
     public void setName(String name) {

@@ -23,9 +23,7 @@ class AuthenticationManagerTest {
     @BeforeEach
     void setUp() {
         var passwordEncoder = new BCryptPasswordEncoder();
-        var user = User.withUsername(EMAIL)
-                .password(passwordEncoder.encode(PASSWORD))
-                .authorities(java.util.List.of())
+        var user = User.withUsername(EMAIL).password(passwordEncoder.encode(PASSWORD)).authorities(java.util.List.of())
                 .build();
         UserDetailsService userDetailsService = email -> {
             if (!EMAIL.equals(email)) {

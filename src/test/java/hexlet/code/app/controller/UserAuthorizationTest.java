@@ -54,11 +54,8 @@ class UserAuthorizationTest {
     void shouldForbidUpdatingAnotherUser() throws Exception {
         when(userAuthorization.isOwner(1L, OTHER_EMAIL)).thenReturn(false);
 
-        mockMvc.perform(put("/api/users/{id}", 1)
-                        .with(jwtFor(OTHER_EMAIL))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"firstName\":\"Changed\"}"))
-                .andExpect(status().isForbidden());
+        mockMvc.perform(put("/api/users/{id}", 1).with(jwtFor(OTHER_EMAIL)).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"firstName\":\"Changed\"}")).andExpect(status().isForbidden());
 
         verifyNoInteractions(userService);
     }
@@ -70,11 +67,8 @@ class UserAuthorizationTest {
         when(userAuthorization.isOwner(1L, OWNER_EMAIL)).thenReturn(true);
         when(userService.update(eq(1L), any())).thenReturn(response);
 
-        mockMvc.perform(put("/api/users/{id}", 1)
-                        .with(jwtFor(OWNER_EMAIL))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"firstName\":\"Changed\"}"))
-                .andExpect(status().isOk())
+        mockMvc.perform(put("/api/users/{id}", 1).with(jwtFor(OWNER_EMAIL)).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"firstName\":\"Changed\"}")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.firstName").value("Changed"));
     }
 
@@ -82,9 +76,7 @@ class UserAuthorizationTest {
     void shouldForbidDeletingAnotherUser() throws Exception {
         when(userAuthorization.isOwner(1L, OTHER_EMAIL)).thenReturn(false);
 
-        mockMvc.perform(delete("/api/users/{id}", 1)
-                        .with(jwtFor(OTHER_EMAIL)))
-                .andExpect(status().isForbidden());
+        mockMvc.perform(delete("/api/users/{id}", 1).with(jwtFor(OTHER_EMAIL))).andExpect(status().isForbidden());
 
         verifyNoInteractions(userService);
     }
@@ -93,9 +85,7 @@ class UserAuthorizationTest {
     void shouldAllowUserToDeleteThemself() throws Exception {
         when(userAuthorization.isOwner(1L, OWNER_EMAIL)).thenReturn(true);
 
-        mockMvc.perform(delete("/api/users/{id}", 1)
-                        .with(jwtFor(OWNER_EMAIL)))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(delete("/api/users/{id}", 1).with(jwtFor(OWNER_EMAIL))).andExpect(status().isNoContent());
     }
 
     private JwtRequestPostProcessor jwtFor(String email) {

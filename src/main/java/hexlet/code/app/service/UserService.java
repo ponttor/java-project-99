@@ -1,7 +1,5 @@
 package hexlet.code.app.service;
 
-import java.util.List;
-
 import hexlet.code.app.dto.user.UserCreateRequest;
 import hexlet.code.app.dto.user.UserResponse;
 import hexlet.code.app.dto.user.UserUpdateRequest;
@@ -10,6 +8,7 @@ import hexlet.code.app.exception.ResourceNotFoundException;
 import hexlet.code.app.mapper.UserMapper;
 import hexlet.code.app.model.User;
 import hexlet.code.app.repository.UserRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,9 +25,7 @@ public class UserService {
     private final UserMapper userMapper;
 
     public List<UserResponse> findAll() {
-        return userRepository.findAll().stream()
-                .map(userMapper::toResponse)
-                .toList();
+        return userRepository.findAll().stream().map(userMapper::toResponse).toList();
     }
 
     public UserResponse findById(Long id) {
@@ -64,7 +61,6 @@ public class UserService {
     }
 
     private User findUser(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 }

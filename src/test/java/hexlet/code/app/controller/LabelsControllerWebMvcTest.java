@@ -11,12 +11,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.List;
-
 import hexlet.code.app.dto.label.LabelCreateRequest;
 import hexlet.code.app.dto.label.LabelResponse;
 import hexlet.code.app.dto.label.LabelUpdateRequest;
 import hexlet.code.app.service.LabelService;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -43,22 +42,15 @@ class LabelsControllerWebMvcTest {
         when(labelService.create(any(LabelCreateRequest.class))).thenReturn(response);
         when(labelService.update(any(Long.class), any(LabelUpdateRequest.class))).thenReturn(response);
 
-        mockMvc.perform(get("/api/labels"))
-                .andExpect(status().isOk())
-                .andExpect(header().string("X-Total-Count", "1"));
-        mockMvc.perform(get("/api/labels/{id}", 1))
-                .andExpect(status().isOk())
+        mockMvc.perform(get("/api/labels")).andExpect(status().isOk()).andExpect(header().string("X-Total-Count", "1"));
+        mockMvc.perform(get("/api/labels/{id}", 1)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("feature"));
-        mockMvc.perform(post("/api/labels")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"feature\"}"))
+        mockMvc.perform(post("/api/labels").contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"feature\"}"))
                 .andExpect(status().isCreated());
-        mockMvc.perform(put("/api/labels/{id}", 1)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"feature\"}"))
+        mockMvc.perform(
+                put("/api/labels/{id}", 1).contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"feature\"}"))
                 .andExpect(status().isOk());
-        mockMvc.perform(delete("/api/labels/{id}", 1))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(delete("/api/labels/{id}", 1)).andExpect(status().isNoContent());
 
         verify(labelService).delete(1L);
     }

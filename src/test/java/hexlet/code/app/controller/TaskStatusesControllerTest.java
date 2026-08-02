@@ -11,7 +11,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import tools.jackson.databind.ObjectMapper;
 import hexlet.code.app.component.DataInitializer;
 import hexlet.code.app.dto.taskstatus.TaskStatusCreateRequest;
 import hexlet.code.app.dto.taskstatus.TaskStatusUpdateRequest;
@@ -21,12 +20,13 @@ import hexlet.code.app.util.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -57,12 +57,9 @@ class TaskStatusesControllerTest {
     void shouldShowTaskStatus() throws Exception {
         var taskStatus = taskStatusRepository.save(testDataFactory.taskStatus("To Review", "to_review"));
 
-        mockMvc.perform(get("/api/task_statuses/{id}", taskStatus.getId()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(taskStatus.getId()))
-                .andExpect(jsonPath("$.name").value("To Review"))
-                .andExpect(jsonPath("$.slug").value("to_review"))
-                .andExpect(jsonPath("$.createdAt").exists());
+        mockMvc.perform(get("/api/task_statuses/{id}", taskStatus.getId())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(taskStatus.getId())).andExpect(jsonPath("$.name").value("To Review"))
+                .andExpect(jsonPath("$.slug").value("to_review")).andExpect(jsonPath("$.createdAt").exists());
     }
 
     @Test
@@ -71,12 +68,9 @@ class TaskStatusesControllerTest {
         taskStatusRepository.save(testDataFactory.taskStatus("Draft", "draft"));
         taskStatusRepository.save(testDataFactory.taskStatus("Published", "published"));
 
-        mockMvc.perform(get("/api/task_statuses"))
-                .andExpect(status().isOk())
-                .andExpect(header().string("X-Total-Count", "2"))
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].slug").value("draft"))
-                .andExpect(jsonPath("$[1].slug").value("published"));
+        mockMvc.perform(get("/api/task_statuses")).andExpect(status().isOk())
+                .andExpect(header().string("X-Total-Count", "2")).andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].slug").value("draft")).andExpect(jsonPath("$[1].slug").value("published"));
     }
 
     @Test
@@ -86,14 +80,10 @@ class TaskStatusesControllerTest {
         request.setName("New");
         request.setSlug("new");
 
-        mockMvc.perform(post("/api/task_statuses")
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.name").value("New"))
-                .andExpect(jsonPath("$.slug").value("new"))
-                .andExpect(jsonPath("$.createdAt").exists());
+        mockMvc.perform(post("/api/task_statuses").contentType("application/json")
+                .content(objectMapper.writeValueAsString(request))).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").exists()).andExpect(jsonPath("$.name").value("New"))
+                .andExpect(jsonPath("$.slug").value("new")).andExpect(jsonPath("$.createdAt").exists());
     }
 
     @Test
@@ -103,12 +93,9 @@ class TaskStatusesControllerTest {
         var request = new TaskStatusUpdateRequest();
         request.setName("New status");
 
-        mockMvc.perform(put("/api/task_statuses/{id}", taskStatus.getId())
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(taskStatus.getId()))
-                .andExpect(jsonPath("$.name").value("New status"))
+        mockMvc.perform(put("/api/task_statuses/{id}", taskStatus.getId()).contentType("application/json")
+                .content(objectMapper.writeValueAsString(request))).andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(taskStatus.getId())).andExpect(jsonPath("$.name").value("New status"))
                 .andExpect(jsonPath("$.slug").value("draft"));
     }
 
@@ -117,8 +104,7 @@ class TaskStatusesControllerTest {
     void shouldDeleteTaskStatus() throws Exception {
         var taskStatus = taskStatusRepository.save(testDataFactory.taskStatus("Draft", "draft"));
 
-        mockMvc.perform(delete("/api/task_statuses/{id}", taskStatus.getId()))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(delete("/api/task_statuses/{id}", taskStatus.getId())).andExpect(status().isNoContent());
 
         assertThat(taskStatusRepository.findById(taskStatus.getId())).isEmpty();
     }
@@ -128,15 +114,8 @@ class TaskStatusesControllerTest {
         dataInitializer.run();
         dataInitializer.run();
 
-        assertThat(taskStatusRepository.findAll())
-                .extracting(TaskStatus::getSlug)
-                .containsExactlyInAnyOrder(
-                        "draft",
-                        "to_review",
-                        "to_be_fixed",
-                        "to_publish",
-                        "published"
-                );
+        assertThat(taskStatusRepository.findAll()).extracting(TaskStatus::getSlug).containsExactlyInAnyOrder("draft",
+                "to_review", "to_be_fixed", "to_publish", "published");
     }
 
     @Test
@@ -155,16 +134,11 @@ class TaskStatusesControllerTest {
         createRequest.setName("New");
         createRequest.setSlug("new");
 
-        mockMvc.perform(post("/api/task_statuses")
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(createRequest)))
+        mockMvc.perform(post("/api/task_statuses").contentType("application/json")
+                .content(objectMapper.writeValueAsString(createRequest))).andExpect(status().isUnauthorized());
+        mockMvc.perform(put("/api/task_statuses/{id}", 999).contentType("application/json").content("{}"))
                 .andExpect(status().isUnauthorized());
-        mockMvc.perform(put("/api/task_statuses/{id}", 999)
-                        .contentType("application/json")
-                        .content("{}"))
-                .andExpect(status().isUnauthorized());
-        mockMvc.perform(delete("/api/task_statuses/{id}", 999))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(delete("/api/task_statuses/{id}", 999)).andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -174,19 +148,15 @@ class TaskStatusesControllerTest {
         createRequest.setName("");
         createRequest.setSlug("");
 
-        mockMvc.perform(post("/api/task_statuses")
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(createRequest)))
-                .andExpect(status().isBadRequest());
+        mockMvc.perform(post("/api/task_statuses").contentType("application/json")
+                .content(objectMapper.writeValueAsString(createRequest))).andExpect(status().isBadRequest());
 
         var taskStatus = taskStatusRepository.save(testDataFactory.taskStatus("Draft", "draft"));
         var updateRequest = new TaskStatusUpdateRequest();
         updateRequest.setSlug("");
 
-        mockMvc.perform(put("/api/task_statuses/{id}", taskStatus.getId())
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(updateRequest)))
-                .andExpect(status().isBadRequest());
+        mockMvc.perform(put("/api/task_statuses/{id}", taskStatus.getId()).contentType("application/json")
+                .content(objectMapper.writeValueAsString(updateRequest))).andExpect(status().isBadRequest());
     }
 
     @Test
@@ -194,26 +164,21 @@ class TaskStatusesControllerTest {
     void shouldRejectExplicitNullOnUpdate() throws Exception {
         var taskStatus = taskStatusRepository.save(testDataFactory.taskStatus("Draft", "draft"));
 
-        mockMvc.perform(put("/api/task_statuses/{id}", taskStatus.getId())
-                        .contentType("application/json")
-                        .content("{\"name\":null}"))
-                .andExpect(status().isBadRequest());
+        mockMvc.perform(put("/api/task_statuses/{id}", taskStatus.getId()).contentType("application/json")
+                .content("{\"name\":null}")).andExpect(status().isBadRequest());
     }
 
     @Test
     @WithAnonymousUser
     void shouldReturnNotFoundForMissingTaskStatus() throws Exception {
-        mockMvc.perform(get("/api/task_statuses/{id}", 999))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/task_statuses/{id}", 999)).andExpect(status().isNotFound());
     }
 
     @Test
     void shouldFindTaskStatusBySlug() {
         var taskStatus = taskStatusRepository.save(testDataFactory.taskStatus("Draft", "draft"));
 
-        assertThat(taskStatusRepository.findBySlug("draft"))
-                .get()
-                .extracting(TaskStatus::getId)
+        assertThat(taskStatusRepository.findBySlug("draft")).get().extracting(TaskStatus::getId)
                 .isEqualTo(taskStatus.getId());
     }
 

@@ -5,12 +5,11 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Optional;
-
 import hexlet.code.app.exception.ResourceConflictException;
 import hexlet.code.app.mapper.LabelMapper;
 import hexlet.code.app.model.Label;
 import hexlet.code.app.repository.LabelRepository;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -37,10 +36,8 @@ class LabelServiceUnitTest {
         when(labelRepository.findById(1L)).thenReturn(Optional.of(label));
         doThrow(databaseException).when(labelRepository).flush();
 
-        assertThatThrownBy(() -> labelService.delete(1L))
-                .isInstanceOf(ResourceConflictException.class)
-                .hasMessage("Label is used by a task")
-                .hasCause(databaseException);
+        assertThatThrownBy(() -> labelService.delete(1L)).isInstanceOf(ResourceConflictException.class)
+                .hasMessage("Label is used by a task").hasCause(databaseException);
 
         verify(labelRepository).delete(label);
     }

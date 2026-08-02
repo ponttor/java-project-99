@@ -11,12 +11,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.List;
-
 import hexlet.code.app.dto.taskstatus.TaskStatusCreateRequest;
 import hexlet.code.app.dto.taskstatus.TaskStatusResponse;
 import hexlet.code.app.dto.taskstatus.TaskStatusUpdateRequest;
 import hexlet.code.app.service.TaskStatusService;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -43,22 +42,15 @@ class TaskStatusesControllerWebMvcTest {
         when(taskStatusService.create(any(TaskStatusCreateRequest.class))).thenReturn(response);
         when(taskStatusService.update(any(Long.class), any(TaskStatusUpdateRequest.class))).thenReturn(response);
 
-        mockMvc.perform(get("/api/task_statuses"))
-                .andExpect(status().isOk())
+        mockMvc.perform(get("/api/task_statuses")).andExpect(status().isOk())
                 .andExpect(header().string("X-Total-Count", "1"));
-        mockMvc.perform(get("/api/task_statuses/{id}", 1))
-                .andExpect(status().isOk())
+        mockMvc.perform(get("/api/task_statuses/{id}", 1)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.slug").value("draft"));
-        mockMvc.perform(post("/api/task_statuses")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Draft\",\"slug\":\"draft\"}"))
-                .andExpect(status().isCreated());
-        mockMvc.perform(put("/api/task_statuses/{id}", 1)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Draft\"}"))
-                .andExpect(status().isOk());
-        mockMvc.perform(delete("/api/task_statuses/{id}", 1))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(post("/api/task_statuses").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Draft\",\"slug\":\"draft\"}")).andExpect(status().isCreated());
+        mockMvc.perform(put("/api/task_statuses/{id}", 1).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Draft\"}")).andExpect(status().isOk());
+        mockMvc.perform(delete("/api/task_statuses/{id}", 1)).andExpect(status().isNoContent());
 
         verify(taskStatusService).delete(1L);
     }

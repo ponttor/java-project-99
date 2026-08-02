@@ -1,10 +1,5 @@
 package hexlet.code.app.service;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import hexlet.code.app.dto.task.TaskCreateRequest;
 import hexlet.code.app.dto.task.TaskFilterParams;
 import hexlet.code.app.dto.task.TaskResponse;
@@ -20,6 +15,10 @@ import hexlet.code.app.repository.TaskRepository;
 import hexlet.code.app.repository.TaskStatusRepository;
 import hexlet.code.app.repository.UserRepository;
 import hexlet.code.app.specification.TaskSpecification;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,9 +42,7 @@ public class TaskService {
 
     @Transactional(readOnly = true)
     public List<TaskResponse> findAll(TaskFilterParams params) {
-        return taskRepository.findAll(taskSpecification.build(params)).stream()
-                .map(taskMapper::toResponse)
-                .toList();
+        return taskRepository.findAll(taskSpecification.build(params)).stream().map(taskMapper::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
@@ -73,9 +70,7 @@ public class TaskService {
         }
 
         if (request.isAssigneeIdPresent()) {
-            task.setAssignee(request.getAssigneeId() == null
-                    ? null
-                    : findAssignee(request.getAssigneeId()));
+            task.setAssignee(request.getAssigneeId() == null ? null : findAssignee(request.getAssigneeId()));
         }
 
         if (request.isTitlePresent()) {
@@ -102,8 +97,7 @@ public class TaskService {
     }
 
     private Task findTask(Long id) {
-        return taskRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+        return taskRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Task not found"));
     }
 
     private TaskStatus findTaskStatus(String slug) {
@@ -112,22 +106,19 @@ public class TaskService {
     }
 
     private User findAssignee(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Assignee not found"));
+        return userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Assignee not found"));
     }
 
     private LinkedHashSet<Label> findLabels(List<Long> ids) {
         var labelsById = labelRepository.findAllById(ids).stream()
                 .collect(Collectors.toMap(Label::getId, Function.identity()));
 
-        return ids.stream()
-                .map(id -> {
-                    var label = labelsById.get(id);
-                    if (label == null) {
-                        throw new ResourceNotFoundException("Label not found");
-                    }
-                    return label;
-                })
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+        return ids.stream().map(id -> {
+            var label = labelsById.get(id);
+            if (label == null) {
+                throw new ResourceNotFoundException("Label not found");
+            }
+            return label;
+        }).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 }

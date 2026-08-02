@@ -9,7 +9,5 @@ import lombok.Setter;
 @Setter
 public class LabelUpdateRequest {
 
-    @NotBlank
-    @Size(min = 3, max = 1000)
-    private String name;
+    @NotBlank @Size(min = 3, max = 1000) private String name;
 }

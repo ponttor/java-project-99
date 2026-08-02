@@ -11,7 +11,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import tools.jackson.databind.ObjectMapper;
 import hexlet.code.app.component.DataInitializer;
 import hexlet.code.app.model.Label;
 import hexlet.code.app.repository.LabelRepository;
@@ -19,15 +18,16 @@ import hexlet.code.app.repository.TaskRepository;
 import hexlet.code.app.repository.TaskStatusRepository;
 import hexlet.code.app.util.TestDataFactory;
 import java.util.Map;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -66,24 +66,19 @@ class LabelsControllerTest {
     void shouldCreateShowAndListLabels() throws Exception {
         var request = Map.of("name", "new label");
 
-        var result = mockMvc.perform(post("/api/labels")
-                        .contentType("application/json")
+        var result = mockMvc
+                .perform(post("/api/labels").contentType("application/json")
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.name").value("new label"))
-                .andExpect(jsonPath("$.createdAt").exists())
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.name").value("new label")).andExpect(jsonPath("$.createdAt").exists())
                 .andReturn();
 
         var id = objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asLong();
 
-        mockMvc.perform(get("/api/labels/{id}", id))
-                .andExpect(status().isOk())
+        mockMvc.perform(get("/api/labels/{id}", id)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("new label"));
 
-        mockMvc.perform(get("/api/labels"))
-                .andExpect(status().isOk())
-                .andExpect(header().string("X-Total-Count", "1"))
+        mockMvc.perform(get("/api/labels")).andExpect(status().isOk()).andExpect(header().string("X-Total-Count", "1"))
                 .andExpect(jsonPath("$", hasSize(1)));
 
         assertThat(labelRepository.findByName("new label")).isPresent();
@@ -93,15 +88,11 @@ class LabelsControllerTest {
     void shouldUpdateAndDeleteLabel() throws Exception {
         var label = labelRepository.save(testDataFactory.label("old name"));
 
-        mockMvc.perform(put("/api/labels/{id}", label.getId())
-                        .contentType("application/json")
-                        .content("{\"name\":\"new name\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(label.getId()))
-                .andExpect(jsonPath("$.name").value("new name"));
+        mockMvc.perform(put("/api/labels/{id}", label.getId()).contentType("application/json")
+                .content("{\"name\":\"new name\"}")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(label.getId())).andExpect(jsonPath("$.name").value("new name"));
 
-        mockMvc.perform(delete("/api/labels/{id}", label.getId()))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(delete("/api/labels/{id}", label.getId())).andExpect(status().isNoContent());
 
         assertThat(labelRepository.findById(label.getId())).isEmpty();
     }
@@ -110,39 +101,30 @@ class LabelsControllerTest {
     void shouldRejectInvalidAndDuplicateNames() throws Exception {
         labelRepository.save(testDataFactory.label("duplicate"));
 
-        mockMvc.perform(post("/api/labels")
-                        .contentType("application/json")
-                        .content("{\"name\":\"ab\"}"))
+        mockMvc.perform(post("/api/labels").contentType("application/json").content("{\"name\":\"ab\"}"))
                 .andExpect(status().isBadRequest());
-        mockMvc.perform(post("/api/labels")
-                        .contentType("application/json")
-                        .content("{\"name\":\"duplicate\"}"))
+        mockMvc.perform(post("/api/labels").contentType("application/json").content("{\"name\":\"duplicate\"}"))
                 .andExpect(status().isConflict());
-        mockMvc.perform(put("/api/labels/{id}", 999)
-                        .contentType("application/json")
-                        .content("{\"name\":\"valid name\"}"))
+        mockMvc.perform(
+                put("/api/labels/{id}", 999).contentType("application/json").content("{\"name\":\"valid name\"}"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void shouldEnforceExactNameLengthBounds() throws Exception {
-        var result = mockMvc.perform(post("/api/labels")
-                        .contentType("application/json")
+        var result = mockMvc
+                .perform(post("/api/labels").contentType("application/json")
                         .content(objectMapper.writeValueAsString(Map.of("name", "abc"))))
-                .andExpect(status().isCreated())
-                .andReturn();
+                .andExpect(status().isCreated()).andReturn();
         var id = objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asLong();
         var maxLengthName = "x".repeat(1000);
 
-        mockMvc.perform(put("/api/labels/{id}", id)
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(Map.of("name", maxLengthName))))
-                .andExpect(status().isOk())
+        mockMvc.perform(put("/api/labels/{id}", id).contentType("application/json")
+                .content(objectMapper.writeValueAsString(Map.of("name", maxLengthName)))).andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value(maxLengthName));
 
-        mockMvc.perform(post("/api/labels")
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(Map.of("name", "x".repeat(1001)))))
+        mockMvc.perform(post("/api/labels").contentType("application/json")
+                .content(objectMapper.writeValueAsString(Map.of("name", "x".repeat(1001)))))
                 .andExpect(status().isBadRequest());
     }
 
@@ -151,13 +133,10 @@ class LabelsControllerTest {
     void shouldRequireAuthenticationForAllLabelRoutes() throws Exception {
         mockMvc.perform(get("/api/labels")).andExpect(status().isUnauthorized());
         mockMvc.perform(get("/api/labels/{id}", 999)).andExpect(status().isUnauthorized());
-        mockMvc.perform(post("/api/labels")
-                        .contentType("application/json")
-                        .content("{\"name\":\"new label\"}"))
+        mockMvc.perform(post("/api/labels").contentType("application/json").content("{\"name\":\"new label\"}"))
                 .andExpect(status().isUnauthorized());
-        mockMvc.perform(put("/api/labels/{id}", 999)
-                        .contentType("application/json")
-                        .content("{\"name\":\"new label\"}"))
+        mockMvc.perform(
+                put("/api/labels/{id}", 999).contentType("application/json").content("{\"name\":\"new label\"}"))
                 .andExpect(status().isUnauthorized());
         mockMvc.perform(delete("/api/labels/{id}", 999)).andExpect(status().isUnauthorized());
     }
@@ -169,8 +148,7 @@ class LabelsControllerTest {
         var task = testDataFactory.taskWithLabels("Task", status, null, label);
         taskRepository.saveAndFlush(task);
 
-        mockMvc.perform(delete("/api/labels/{id}", label.getId()))
-                .andExpect(status().isConflict())
+        mockMvc.perform(delete("/api/labels/{id}", label.getId())).andExpect(status().isConflict())
                 .andExpect(jsonPath("$.detail").value("Label is used by a task"));
 
         assertThat(labelRepository.findById(label.getId())).isPresent();
@@ -180,10 +158,7 @@ class LabelsControllerTest {
     void shouldFindLabelByUniqueNameAndEnforceUniqueness() {
         var label = labelRepository.saveAndFlush(testDataFactory.label("feature"));
 
-        assertThat(labelRepository.findByName("feature"))
-                .get()
-                .extracting(Label::getId)
-                .isEqualTo(label.getId());
+        assertThat(labelRepository.findByName("feature")).get().extracting(Label::getId).isEqualTo(label.getId());
         var duplicateLabel = testDataFactory.label("feature");
 
         assertThatThrownBy(() -> labelRepository.saveAndFlush(duplicateLabel))
@@ -195,8 +170,6 @@ class LabelsControllerTest {
         dataInitializer.run();
         dataInitializer.run();
 
-        assertThat(labelRepository.findAll())
-                .extracting(Label::getName)
-                .containsExactlyInAnyOrder("feature", "bug");
+        assertThat(labelRepository.findAll()).extracting(Label::getName).containsExactlyInAnyOrder("feature", "bug");
     }
 }

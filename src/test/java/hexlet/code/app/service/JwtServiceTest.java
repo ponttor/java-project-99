@@ -3,9 +3,8 @@ package hexlet.code.app.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.time.Duration;
-
 import hexlet.code.app.config.JwtConfig;
+import java.time.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -37,8 +36,7 @@ class JwtServiceTest {
         assertThat(jwt.getSubject()).isEqualTo(EMAIL);
         assertThat(jwt.getIssuedAt()).isNotNull();
         assertThat(jwt.getExpiresAt()).isNotNull();
-        assertThat(Duration.between(jwt.getIssuedAt(), jwt.getExpiresAt()))
-                .isEqualTo(Duration.ofHours(1));
+        assertThat(Duration.between(jwt.getIssuedAt(), jwt.getExpiresAt())).isEqualTo(Duration.ofHours(1));
     }
 
     @Test
@@ -49,16 +47,14 @@ class JwtServiceTest {
         parts[2] = replacement + parts[2].substring(1);
         var modifiedToken = String.join(".", parts);
 
-        assertThatThrownBy(() -> jwtDecoder.decode(modifiedToken))
-                .isInstanceOf(JwtException.class);
+        assertThatThrownBy(() -> jwtDecoder.decode(modifiedToken)).isInstanceOf(JwtException.class);
     }
 
     @Test
     void shouldRejectSecretShorterThanThirtyTwoBytes() {
         var jwtConfig = new JwtConfig();
 
-        assertThatThrownBy(() -> jwtConfig.jwtSecretKey("too-short"))
-                .isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> jwtConfig.jwtSecretKey("too-short")).isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("JWT secret must contain at least 32 bytes");
     }
 }

@@ -1,8 +1,7 @@
 package hexlet.code.app.dto.taskstatus;
 
-import java.time.LocalDateTime;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 

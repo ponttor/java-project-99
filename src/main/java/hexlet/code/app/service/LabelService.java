@@ -1,7 +1,5 @@
 package hexlet.code.app.service;
 
-import java.util.List;
-
 import hexlet.code.app.dto.label.LabelCreateRequest;
 import hexlet.code.app.dto.label.LabelResponse;
 import hexlet.code.app.dto.label.LabelUpdateRequest;
@@ -10,6 +8,7 @@ import hexlet.code.app.exception.ResourceNotFoundException;
 import hexlet.code.app.mapper.LabelMapper;
 import hexlet.code.app.model.Label;
 import hexlet.code.app.repository.LabelRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -26,9 +25,7 @@ public class LabelService {
 
     @Transactional(readOnly = true)
     public List<LabelResponse> findAll() {
-        return labelRepository.findAll().stream()
-                .map(labelMapper::toResponse)
-                .toList();
+        return labelRepository.findAll().stream().map(labelMapper::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
@@ -59,16 +56,13 @@ public class LabelService {
     }
 
     private Label findLabel(Long id) {
-        return labelRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Label not found"));
+        return labelRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Label not found"));
     }
 
     private void ensureNameAvailable(String name, Long currentLabelId) {
-        labelRepository.findByName(name)
-                .filter(label -> !label.getId().equals(currentLabelId))
-                .ifPresent(label -> {
-                    throw new ResourceConflictException("Label name already exists");
-                });
+        labelRepository.findByName(name).filter(label -> !label.getId().equals(currentLabelId)).ifPresent(label -> {
+            throw new ResourceConflictException("Label name already exists");
+        });
     }
 
     private LabelResponse save(Label label) {

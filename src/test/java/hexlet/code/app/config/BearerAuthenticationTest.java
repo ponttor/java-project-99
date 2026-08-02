@@ -6,8 +6,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import hexlet.code.app.service.JwtService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -27,8 +27,7 @@ class BearerAuthenticationTest {
     void shouldAccessProtectedRouteWithBearerToken() throws Exception {
         var token = jwtService.generateToken(EMAIL);
 
-        mockMvc.perform(get("/api/users")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+        mockMvc.perform(get("/api/users").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk());
     }
 
@@ -40,8 +39,7 @@ class BearerAuthenticationTest {
         parts[2] = replacement + parts[2].substring(1);
         var invalidToken = String.join(".", parts);
 
-        mockMvc.perform(get("/api/users")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidToken))
+        mockMvc.perform(get("/api/users").header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidToken))
                 .andExpect(status().isUnauthorized());
     }
 }

@@ -2,8 +2,6 @@ package hexlet.code.app.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.LinkedHashSet;
-
 import hexlet.code.app.config.JpaConfig;
 import hexlet.code.app.dto.task.TaskFilterParams;
 import hexlet.code.app.model.Label;
@@ -12,6 +10,7 @@ import hexlet.code.app.model.TaskStatus;
 import hexlet.code.app.model.User;
 import hexlet.code.app.specification.TaskSpecification;
 import jakarta.persistence.EntityManager;
+import java.util.LinkedHashSet;
 import org.hibernate.Hibernate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,9 +62,7 @@ class TaskRepositoryJpaTest {
 
         var result = taskRepository.findAll(taskSpecification.build(params));
 
-        assertThat(result)
-                .extracting(Task::getId)
-                .containsExactly(expected.getId());
+        assertThat(result).extracting(Task::getId).containsExactly(expected.getId());
     }
 
     @Test
@@ -76,9 +73,7 @@ class TaskRepositoryJpaTest {
 
         var result = taskRepository.findAll(taskSpecification.build(new TaskFilterParams()));
 
-        assertThat(result)
-                .extracting(Task::getId)
-                .containsExactlyInAnyOrder(first.getId(), second.getId());
+        assertThat(result).extracting(Task::getId).containsExactlyInAnyOrder(first.getId(), second.getId());
     }
 
     @Test

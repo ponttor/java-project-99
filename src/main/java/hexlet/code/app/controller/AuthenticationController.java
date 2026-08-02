@@ -21,10 +21,8 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public String login(@RequestBody AuthRequest request) {
-        var authenticationRequest = UsernamePasswordAuthenticationToken.unauthenticated(
-                request.getUsername(),
-                request.getPassword()
-        );
+        var authenticationRequest = UsernamePasswordAuthenticationToken.unauthenticated(request.getUsername(),
+                request.getPassword());
         var authentication = authenticationManager.authenticate(authenticationRequest);
 
         return jwtService.generateToken(authentication.getName());

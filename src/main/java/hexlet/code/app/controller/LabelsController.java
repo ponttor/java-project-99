@@ -1,12 +1,11 @@
 package hexlet.code.app.controller;
 
-import java.util.List;
-
 import hexlet.code.app.dto.label.LabelCreateRequest;
 import hexlet.code.app.dto.label.LabelResponse;
 import hexlet.code.app.dto.label.LabelUpdateRequest;
 import hexlet.code.app.service.LabelService;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,9 +29,7 @@ public class LabelsController {
     @GetMapping
     public ResponseEntity<List<LabelResponse>> index() {
         var labels = labelService.findAll();
-        return ResponseEntity.ok()
-                .header("X-Total-Count", String.valueOf(labels.size()))
-                .body(labels);
+        return ResponseEntity.ok().header("X-Total-Count", String.valueOf(labels.size())).body(labels);
     }
 
     @GetMapping("/{id}")
@@ -47,10 +44,7 @@ public class LabelsController {
     }
 
     @PutMapping("/{id}")
-    public LabelResponse update(
-            @PathVariable Long id,
-            @Valid @RequestBody LabelUpdateRequest request
-    ) {
+    public LabelResponse update(@PathVariable Long id, @Valid @RequestBody LabelUpdateRequest request) {
         return labelService.update(id, request);
     }
 

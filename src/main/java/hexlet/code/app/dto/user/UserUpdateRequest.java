@@ -13,10 +13,7 @@ public class UserUpdateRequest {
 
     private String lastName;
 
-    @Size(min = 1)
-    @Email
-    private String email;
+    @Size(min = 1) @Email private String email;
 
-    @Size(min = 3)
-    private String password;
+    @Size(min = 3) private String password;
 }

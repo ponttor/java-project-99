@@ -1,12 +1,11 @@
 package hexlet.code.app.mapper;
 
-import java.util.List;
-import java.util.Set;
-
 import hexlet.code.app.dto.task.TaskCreateRequest;
 import hexlet.code.app.dto.task.TaskResponse;
 import hexlet.code.app.model.Label;
 import hexlet.code.app.model.Task;
+import java.util.List;
+import java.util.Set;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
@@ -31,8 +30,6 @@ public interface TaskMapper {
     Task toEntity(TaskCreateRequest request);
 
     default List<Long> mapLabelIds(Set<Label> labels) {
-        return labels.stream()
-                .map(Label::getId)
-                .toList();
+        return labels.stream().map(Label::getId).toList();
     }
 }

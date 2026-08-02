@@ -1,7 +1,5 @@
 package hexlet.code.app.service;
 
-import java.util.List;
-
 import hexlet.code.app.dto.taskstatus.TaskStatusCreateRequest;
 import hexlet.code.app.dto.taskstatus.TaskStatusResponse;
 import hexlet.code.app.dto.taskstatus.TaskStatusUpdateRequest;
@@ -10,6 +8,7 @@ import hexlet.code.app.exception.ResourceNotFoundException;
 import hexlet.code.app.mapper.TaskStatusMapper;
 import hexlet.code.app.model.TaskStatus;
 import hexlet.code.app.repository.TaskStatusRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -23,9 +22,7 @@ public class TaskStatusService {
     private final TaskStatusMapper taskStatusMapper;
 
     public List<TaskStatusResponse> findAll() {
-        return taskStatusRepository.findAll().stream()
-                .map(taskStatusMapper::toResponse)
-                .toList();
+        return taskStatusRepository.findAll().stream().map(taskStatusMapper::toResponse).toList();
     }
 
     public TaskStatusResponse findById(Long id) {

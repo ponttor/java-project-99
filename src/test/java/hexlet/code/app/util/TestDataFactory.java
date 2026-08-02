@@ -1,12 +1,11 @@
 package hexlet.code.app.util;
 
-import java.util.Set;
-
 import hexlet.code.app.dto.user.UserCreateRequest;
 import hexlet.code.app.model.Label;
 import hexlet.code.app.model.Task;
 import hexlet.code.app.model.TaskStatus;
 import hexlet.code.app.model.User;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -32,13 +31,7 @@ public class TestDataFactory {
         return taskStatus;
     }
 
-    public Task task(
-            String name,
-            String description,
-            TaskStatus taskStatus,
-            User assignee,
-            Integer index
-    ) {
+    public Task task(String name, String description, TaskStatus taskStatus, User assignee, Integer index) {
         var task = new Task();
         task.setName(name);
         task.setDescription(description);
@@ -75,12 +68,7 @@ public class TestDataFactory {
         return user(email, null, null, password);
     }
 
-    public UserCreateRequest userCreateRequest(
-            String email,
-            String firstName,
-            String lastName,
-            String password
-    ) {
+    public UserCreateRequest userCreateRequest(String email, String firstName, String lastName, String password) {
         var request = new UserCreateRequest();
         request.setEmail(email);
         request.setFirstName(firstName);

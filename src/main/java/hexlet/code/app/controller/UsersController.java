@@ -1,12 +1,11 @@
 package hexlet.code.app.controller;
 
-import java.util.List;
-
 import hexlet.code.app.dto.user.UserCreateRequest;
 import hexlet.code.app.dto.user.UserResponse;
 import hexlet.code.app.dto.user.UserUpdateRequest;
 import hexlet.code.app.service.UserService;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,9 +30,7 @@ public class UsersController {
     @GetMapping
     public ResponseEntity<List<UserResponse>> index() {
         var users = userService.findAll();
-        return ResponseEntity.ok()
-                .header("X-Total-Count", String.valueOf(users.size()))
-                .body(users);
+        return ResponseEntity.ok().header("X-Total-Count", String.valueOf(users.size())).body(users);
     }
 
     @GetMapping("/{id}")

@@ -8,9 +8,7 @@ import lombok.Setter;
 @Setter
 public class TaskStatusCreateRequest {
 
-    @NotBlank
-    private String name;
+    @NotBlank private String name;
 
-    @NotBlank
-    private String slug;
+    @NotBlank private String slug;
 }

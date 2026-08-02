@@ -1,12 +1,11 @@
 package hexlet.code.app.controller;
 
-import java.util.List;
-
 import hexlet.code.app.dto.taskstatus.TaskStatusCreateRequest;
 import hexlet.code.app.dto.taskstatus.TaskStatusResponse;
 import hexlet.code.app.dto.taskstatus.TaskStatusUpdateRequest;
 import hexlet.code.app.service.TaskStatusService;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,9 +29,7 @@ public class TaskStatusesController {
     @GetMapping
     public ResponseEntity<List<TaskStatusResponse>> index() {
         var taskStatuses = taskStatusService.findAll();
-        return ResponseEntity.ok()
-                .header("X-Total-Count", String.valueOf(taskStatuses.size()))
-                .body(taskStatuses);
+        return ResponseEntity.ok().header("X-Total-Count", String.valueOf(taskStatuses.size())).body(taskStatuses);
     }
 
     @GetMapping("/{id}")
@@ -47,10 +44,7 @@ public class TaskStatusesController {
     }
 
     @PutMapping("/{id}")
-    public TaskStatusResponse update(
-            @PathVariable Long id,
-            @Valid @RequestBody TaskStatusUpdateRequest request
-    ) {
+    public TaskStatusResponse update(@PathVariable Long id, @Valid @RequestBody TaskStatusUpdateRequest request) {
         return taskStatusService.update(id, request);
     }
 

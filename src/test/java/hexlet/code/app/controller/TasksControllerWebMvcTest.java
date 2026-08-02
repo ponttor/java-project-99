@@ -12,13 +12,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.List;
-
 import hexlet.code.app.dto.task.TaskCreateRequest;
 import hexlet.code.app.dto.task.TaskFilterParams;
 import hexlet.code.app.dto.task.TaskResponse;
 import hexlet.code.app.dto.task.TaskUpdateRequest;
 import hexlet.code.app.service.TaskService;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,14 +42,9 @@ class TasksControllerWebMvcTest {
         var response = taskResponse(1L, "Task");
         when(taskService.findAll(any(TaskFilterParams.class))).thenReturn(List.of(response));
 
-        mockMvc.perform(get("/api/tasks")
-                        .queryParam("titleCont", "task")
-                        .queryParam("assigneeId", "3")
-                        .queryParam("status", "draft")
-                        .queryParam("labelId", "5"))
-                .andExpect(status().isOk())
-                .andExpect(header().string("X-Total-Count", "1"))
-                .andExpect(jsonPath("$[0].title").value("Task"));
+        mockMvc.perform(get("/api/tasks").queryParam("titleCont", "task").queryParam("assigneeId", "3")
+                .queryParam("status", "draft").queryParam("labelId", "5")).andExpect(status().isOk())
+                .andExpect(header().string("X-Total-Count", "1")).andExpect(jsonPath("$[0].title").value("Task"));
 
         var captor = ArgumentCaptor.forClass(TaskFilterParams.class);
         verify(taskService).findAll(captor.capture());
@@ -67,18 +61,13 @@ class TasksControllerWebMvcTest {
         when(taskService.create(any(TaskCreateRequest.class))).thenReturn(response);
         when(taskService.update(any(Long.class), any(TaskUpdateRequest.class))).thenReturn(response);
 
-        mockMvc.perform(get("/api/tasks/{id}", 1))
-                .andExpect(status().isOk());
-        mockMvc.perform(post("/api/tasks")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\":\"Task\",\"status\":\"draft\",\"taskLabelIds\":[]}"))
+        mockMvc.perform(get("/api/tasks/{id}", 1)).andExpect(status().isOk());
+        mockMvc.perform(post("/api/tasks").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"title\":\"Task\",\"status\":\"draft\",\"taskLabelIds\":[]}"))
                 .andExpect(status().isCreated());
-        mockMvc.perform(put("/api/tasks/{id}", 1)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\":\"Updated task\"}"))
-                .andExpect(status().isOk());
-        mockMvc.perform(delete("/api/tasks/{id}", 1))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(put("/api/tasks/{id}", 1).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"title\":\"Updated task\"}")).andExpect(status().isOk());
+        mockMvc.perform(delete("/api/tasks/{id}", 1)).andExpect(status().isNoContent());
 
         verify(taskService).delete(1L);
     }

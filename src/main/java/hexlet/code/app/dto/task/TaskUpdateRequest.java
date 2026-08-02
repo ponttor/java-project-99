@@ -1,10 +1,9 @@
 package hexlet.code.app.dto.task;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import jakarta.validation.constraints.Size;
+import java.util.List;
 import lombok.Getter;
 
 @Getter
@@ -14,13 +13,11 @@ public class TaskUpdateRequest {
 
     private Long assigneeId;
 
-    @Size(min = 1)
-    private String title;
+    @Size(min = 1) private String title;
 
     private String content;
 
-    @Size(min = 1)
-    private String status;
+    @Size(min = 1) private String status;
 
     private List<Long> taskLabelIds;
 

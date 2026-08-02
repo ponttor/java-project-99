@@ -1,14 +1,13 @@
 package hexlet.code.app.component;
 
-import java.util.Map;
-import java.util.Set;
-
 import hexlet.code.app.model.Label;
 import hexlet.code.app.model.TaskStatus;
 import hexlet.code.app.model.User;
 import hexlet.code.app.repository.LabelRepository;
 import hexlet.code.app.repository.TaskStatusRepository;
 import hexlet.code.app.repository.UserRepository;
+import java.util.Map;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,13 +19,8 @@ public class DataInitializer implements CommandLineRunner {
 
     private static final String ADMIN_EMAIL = "hexlet@example.com";
 
-    private static final Map<String, String> DEFAULT_TASK_STATUSES = Map.of(
-            "draft", "Draft",
-            "to_review", "To Review",
-            "to_be_fixed", "To Be Fixed",
-            "to_publish", "To Publish",
-            "published", "Published"
-    );
+    private static final Map<String, String> DEFAULT_TASK_STATUSES = Map.of("draft", "Draft", "to_review", "To Review",
+            "to_be_fixed", "To Be Fixed", "to_publish", "To Publish", "published", "Published");
 
     private static final Set<String> DEFAULT_LABELS = Set.of("feature", "bug");
 

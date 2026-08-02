@@ -1,9 +1,8 @@
 package hexlet.code.app.specification;
 
-import java.util.Locale;
-
 import hexlet.code.app.dto.task.TaskFilterParams;
 import hexlet.code.app.model.Task;
+import java.util.Locale;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
@@ -11,19 +10,15 @@ import org.springframework.stereotype.Component;
 public class TaskSpecification {
 
     public Specification<Task> build(TaskFilterParams params) {
-        return withTitleContaining(params.getTitleCont())
-                .and(withAssigneeId(params.getAssigneeId()))
-                .and(withStatus(params.getStatus()))
-                .and(withLabelId(params.getLabelId()));
+        return withTitleContaining(params.getTitleCont()).and(withAssigneeId(params.getAssigneeId()))
+                .and(withStatus(params.getStatus())).and(withLabelId(params.getLabelId()));
     }
 
     private Specification<Task> withTitleContaining(String title) {
         return (root, query, criteriaBuilder) -> title == null
                 ? criteriaBuilder.conjunction()
-                : criteriaBuilder.like(
-                        criteriaBuilder.lower(root.get("name")),
-                        "%" + title.toLowerCase(Locale.ROOT) + "%"
-                );
+                : criteriaBuilder.like(criteriaBuilder.lower(root.get("name")),
+                        "%" + title.toLowerCase(Locale.ROOT) + "%");
     }
 
     private Specification<Task> withAssigneeId(Long assigneeId) {

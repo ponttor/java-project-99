@@ -7,9 +7,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import java.util.List;
-import java.util.Optional;
-
 import hexlet.code.app.dto.task.TaskCreateRequest;
 import hexlet.code.app.dto.task.TaskResponse;
 import hexlet.code.app.dto.task.TaskUpdateRequest;
@@ -24,6 +21,8 @@ import hexlet.code.app.repository.TaskRepository;
 import hexlet.code.app.repository.TaskStatusRepository;
 import hexlet.code.app.repository.UserRepository;
 import hexlet.code.app.specification.TaskSpecification;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -116,8 +115,7 @@ class TaskServiceUnitTest {
         when(taskMapper.toEntity(request)).thenReturn(task);
         when(taskStatusRepository.findBySlug("missing")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> taskService.create(request))
-                .isInstanceOf(ResourceNotFoundException.class)
+        assertThatThrownBy(() -> taskService.create(request)).isInstanceOf(ResourceNotFoundException.class)
                 .hasMessage("Task status not found");
 
         verify(taskRepository, never()).save(task);

@@ -9,8 +9,8 @@ import hexlet.code.app.util.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -43,17 +43,12 @@ class AuthenticationControllerTest {
 
     @Test
     void shouldReturnTokenForValidCredentials() throws Exception {
-        var response = mockMvc.perform(post("/api/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                    "username": "%s",
-                                    "password": "%s"
-                                }
-                                """.formatted(EMAIL, PASSWORD)))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
+        var response = mockMvc.perform(post("/api/login").contentType(MediaType.APPLICATION_JSON).content("""
+                {
+                    "username": "%s",
+                    "password": "%s"
+                }
+                """.formatted(EMAIL, PASSWORD))).andExpect(status().isOk()).andReturn().getResponse()
                 .getContentAsString();
 
         var jwt = jwtDecoder.decode(response);
@@ -62,27 +57,21 @@ class AuthenticationControllerTest {
 
     @Test
     void shouldReturnUnauthorizedForIncorrectPassword() throws Exception {
-        mockMvc.perform(post("/api/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                    "username": "%s",
-                                    "password": "wrong-password"
-                                }
-                                """.formatted(EMAIL)))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(post("/api/login").contentType(MediaType.APPLICATION_JSON).content("""
+                {
+                    "username": "%s",
+                    "password": "wrong-password"
+                }
+                """.formatted(EMAIL))).andExpect(status().isUnauthorized());
     }
 
     @Test
     void shouldReturnUnauthorizedForUnknownEmail() throws Exception {
-        mockMvc.perform(post("/api/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                    "username": "unknown@google.com",
-                                    "password": "%s"
-                                }
-                                """.formatted(PASSWORD)))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(post("/api/login").contentType(MediaType.APPLICATION_JSON).content("""
+                {
+                    "username": "unknown@google.com",
+                    "password": "%s"
+                }
+                """.formatted(PASSWORD))).andExpect(status().isUnauthorized());
     }
 }

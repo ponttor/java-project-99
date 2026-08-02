@@ -14,11 +14,7 @@ public class UserCreateRequest {
 
     private String lastName;
 
-    @NotBlank
-    @Email
-    private String email;
+    @NotBlank @Email private String email;
 
-    @NotBlank
-    @Size(min = 3)
-    private String password;
+    @NotBlank @Size(min = 3) private String password;
 }

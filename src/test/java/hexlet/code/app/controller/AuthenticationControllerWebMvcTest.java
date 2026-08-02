@@ -8,9 +8,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.List;
-
 import hexlet.code.app.service.JwtService;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,24 +36,16 @@ class AuthenticationControllerWebMvcTest {
 
     @Test
     void shouldRouteLoginThroughAuthenticationManagerAndJwtService() throws Exception {
-        var authentication = UsernamePasswordAuthenticationToken.authenticated(
-                "user@example.com",
-                null,
-                List.of()
-        );
+        var authentication = UsernamePasswordAuthenticationToken.authenticated("user@example.com", null, List.of());
         when(authenticationManager.authenticate(any())).thenReturn(authentication);
         when(jwtService.generateToken("user@example.com")).thenReturn("signed.jwt.token");
 
-        mockMvc.perform(post("/api/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "username": "user@example.com",
-                                  "password": "password"
-                                }
-                                """))
-                .andExpect(status().isOk())
-                .andExpect(content().string("signed.jwt.token"));
+        mockMvc.perform(post("/api/login").contentType(MediaType.APPLICATION_JSON).content("""
+                {
+                  "username": "user@example.com",
+                  "password": "password"
+                }
+                """)).andExpect(status().isOk()).andExpect(content().string("signed.jwt.token"));
 
         var captor = ArgumentCaptor.forClass(UsernamePasswordAuthenticationToken.class);
         verify(authenticationManager).authenticate(captor.capture());
