@@ -343,8 +343,20 @@ class TasksControllerTest {
         mockMvc.perform(
                 post("/api/tasks").contentType("application/json").content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.title").value("Minimal task"))
-                .andExpect(jsonPath("$.index").isEmpty()).andExpect(jsonPath("$.assignee_id").isEmpty())
+                .andExpect(jsonPath("$.index").value(0)).andExpect(jsonPath("$.assignee_id").isEmpty())
                 .andExpect(jsonPath("$.content").isEmpty());
+    }
+
+    @Test
+    void shouldAppendCreatedTaskWithinItsStatus() throws Exception {
+        var published = taskStatusRepository.save(testDataFactory.taskStatus("Published", "published"));
+        taskRepository.save(testDataFactory.task("Draft task", null, taskStatus, null, 4));
+        taskRepository.save(testDataFactory.task("Published task", null, published, null, 20));
+        var request = Map.of("title", "Next draft", "status", taskStatus.getSlug());
+
+        mockMvc.perform(
+                post("/api/tasks").contentType("application/json").content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.index").value(5));
     }
 
     @Test

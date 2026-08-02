@@ -52,8 +52,14 @@ public class TaskService {
 
     public TaskResponse create(TaskCreateRequest request) {
         var task = taskMapper.toEntity(request);
-        task.setTaskStatus(findTaskStatus(request.getStatus()));
+        var taskStatus = findTaskStatus(request.getStatus());
+        task.setTaskStatus(taskStatus);
         task.setLabels(findLabels(request.getTaskLabelIds()));
+
+        if (task.getIndex() == null) {
+            var nextIndex = taskRepository.findMaxIndexByTaskStatus(taskStatus).map(index -> index + 1).orElse(0);
+            task.setIndex(nextIndex);
+        }
 
         if (request.getAssigneeId() != null) {
             task.setAssignee(findAssignee(request.getAssigneeId()));
