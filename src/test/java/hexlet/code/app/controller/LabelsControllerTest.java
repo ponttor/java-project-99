@@ -170,7 +170,8 @@ class LabelsControllerTest {
         taskRepository.saveAndFlush(task);
 
         mockMvc.perform(delete("/api/labels/{id}", label.getId()))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.detail").value("Label is used by a task"));
 
         assertThat(labelRepository.findById(label.getId())).isPresent();
     }

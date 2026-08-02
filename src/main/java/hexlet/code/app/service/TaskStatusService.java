@@ -5,15 +5,14 @@ import java.util.List;
 import hexlet.code.app.dto.taskstatus.TaskStatusCreateRequest;
 import hexlet.code.app.dto.taskstatus.TaskStatusResponse;
 import hexlet.code.app.dto.taskstatus.TaskStatusUpdateRequest;
+import hexlet.code.app.exception.ResourceConflictException;
 import hexlet.code.app.exception.ResourceNotFoundException;
 import hexlet.code.app.mapper.TaskStatusMapper;
 import hexlet.code.app.model.TaskStatus;
 import hexlet.code.app.repository.TaskStatusRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +49,7 @@ public class TaskStatusService {
             taskStatusRepository.delete(findTaskStatus(id));
             taskStatusRepository.flush();
         } catch (DataIntegrityViolationException exception) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Task status is used by a task", exception);
+            throw new ResourceConflictException("Task status is used by a task", exception);
         }
     }
 

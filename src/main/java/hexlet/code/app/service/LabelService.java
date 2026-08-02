@@ -5,16 +5,15 @@ import java.util.List;
 import hexlet.code.app.dto.label.LabelCreateRequest;
 import hexlet.code.app.dto.label.LabelResponse;
 import hexlet.code.app.dto.label.LabelUpdateRequest;
+import hexlet.code.app.exception.ResourceConflictException;
 import hexlet.code.app.exception.ResourceNotFoundException;
 import hexlet.code.app.mapper.LabelMapper;
 import hexlet.code.app.model.Label;
 import hexlet.code.app.repository.LabelRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -55,7 +54,7 @@ public class LabelService {
             labelRepository.delete(findLabel(id));
             labelRepository.flush();
         } catch (DataIntegrityViolationException exception) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Label is used by a task", exception);
+            throw new ResourceConflictException("Label is used by a task", exception);
         }
     }
 
@@ -68,7 +67,7 @@ public class LabelService {
         labelRepository.findByName(name)
                 .filter(label -> !label.getId().equals(currentLabelId))
                 .ifPresent(label -> {
-                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Label name already exists");
+                    throw new ResourceConflictException("Label name already exists");
                 });
     }
 
@@ -76,7 +75,7 @@ public class LabelService {
         try {
             return labelMapper.toResponse(labelRepository.saveAndFlush(label));
         } catch (DataIntegrityViolationException exception) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Label name already exists", exception);
+            throw new ResourceConflictException("Label name already exists", exception);
         }
     }
 }

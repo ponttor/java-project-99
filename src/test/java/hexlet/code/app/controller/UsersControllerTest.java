@@ -96,7 +96,8 @@ class UsersControllerTest {
     @Test
     void shouldReturnNotFoundForMissingUser() throws Exception {
         mockMvc.perform(get("/api/users/{id}", 999))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.detail").value("User not found"));
     }
 
     @Test
