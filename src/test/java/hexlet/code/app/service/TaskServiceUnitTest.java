@@ -72,10 +72,10 @@ class TaskServiceUnitTest {
         var result = taskService.update(1L, request);
 
         assertThat(result).isSameAs(response);
-        assertThat(task.getName()).isEqualTo("New title");
         assertThat(task.getDescription()).isEqualTo("Keep content");
         assertThat(task.getAssignee()).isNull();
         assertThat(task.getIndex()).isEqualTo(3);
+        verify(taskMapper).update(request, task);
         verifyNoInteractions(taskStatusRepository, userRepository, labelRepository);
     }
 

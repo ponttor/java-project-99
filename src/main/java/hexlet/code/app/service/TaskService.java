@@ -71,20 +71,10 @@ public class TaskService {
     public TaskResponse update(Long id, TaskUpdateRequest request) {
         var task = findTask(id);
 
-        if (request.isIndexPresent()) {
-            task.setIndex(request.getIndex());
-        }
+        taskMapper.update(request, task);
 
         if (request.isAssigneeIdPresent()) {
             task.setAssignee(request.getAssigneeId() == null ? null : findAssignee(request.getAssigneeId()));
-        }
-
-        if (request.isTitlePresent()) {
-            task.setName(request.getTitle());
-        }
-
-        if (request.isContentPresent()) {
-            task.setDescription(request.getContent());
         }
 
         if (request.isStatusPresent()) {
