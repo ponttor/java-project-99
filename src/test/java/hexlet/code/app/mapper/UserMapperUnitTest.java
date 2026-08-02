@@ -1,10 +1,12 @@
 package hexlet.code.app.mapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.instancio.Select.field;
 
 import hexlet.code.app.dto.user.UserCreateRequest;
 import hexlet.code.app.dto.user.UserUpdateRequest;
 import hexlet.code.app.model.User;
+import org.instancio.Instancio;
 import org.junit.jupiter.api.Test;
 
 class UserMapperUnitTest {
@@ -13,10 +15,9 @@ class UserMapperUnitTest {
 
     @Test
     void shouldMapCreateRequestAndEntity() {
-        var request = new UserCreateRequest();
-        request.setEmail("user@example.com");
-        request.setFirstName("John");
-        request.setLastName("Doe");
+        var request = Instancio.of(UserCreateRequest.class).set(field(UserCreateRequest::getEmail), "user@example.com")
+                .set(field(UserCreateRequest::getFirstName), "John").set(field(UserCreateRequest::getLastName), "Doe")
+                .create();
 
         var user = userMapper.toEntity(request);
         var response = userMapper.toResponse(user);
@@ -28,8 +29,8 @@ class UserMapperUnitTest {
 
     @Test
     void shouldUpdateEveryPresentField() {
-        var user = new User();
-        var request = new UserUpdateRequest();
+        var user = Instancio.create(User.class);
+        var request = Instancio.createBlank(UserUpdateRequest.class);
         request.setEmail("updated@example.com");
         request.setFirstName("Updated");
         request.setLastName("User");
@@ -46,7 +47,7 @@ class UserMapperUnitTest {
         assertThat(userMapper.toEntity(null)).isNull();
         assertThat(userMapper.toResponse(null)).isNull();
 
-        var user = new User();
+        var user = Instancio.of(User.class).ignore(field(User::getEmail)).create();
         userMapper.update(null, user);
         assertThat(user.getEmail()).isNull();
     }

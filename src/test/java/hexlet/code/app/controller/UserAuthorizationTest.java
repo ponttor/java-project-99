@@ -15,6 +15,7 @@ import hexlet.code.app.config.SecurityConfig;
 import hexlet.code.app.dto.user.UserResponse;
 import hexlet.code.app.service.UserAuthorization;
 import hexlet.code.app.service.UserService;
+import org.instancio.Instancio;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -62,7 +63,7 @@ class UserAuthorizationTest {
 
     @Test
     void shouldAllowUserToUpdateThemself() throws Exception {
-        var response = new UserResponse();
+        var response = Instancio.createBlank(UserResponse.class);
         response.setFirstName("Changed");
         when(userAuthorization.isOwner(1L, OWNER_EMAIL)).thenReturn(true);
         when(userService.update(eq(1L), any())).thenReturn(response);

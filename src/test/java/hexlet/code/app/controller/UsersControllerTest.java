@@ -13,7 +13,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import hexlet.code.app.component.DataInitializer;
 import hexlet.code.app.dto.user.UserUpdateRequest;
 import hexlet.code.app.repository.UserRepository;
-import hexlet.code.app.util.TestDataFactory;
+import hexlet.code.app.util.ModelGenerator;
+import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +47,7 @@ class UsersControllerTest {
     private DataInitializer dataInitializer;
 
     @Autowired
-    private TestDataFactory testDataFactory;
+    private ModelGenerator modelGenerator;
 
     @BeforeEach
     void setUp() {
@@ -61,7 +62,7 @@ class UsersControllerTest {
 
     @Test
     void shouldCreateUser() throws Exception {
-        var request = testDataFactory.userCreateRequest("jack@google.com", "Jack", "Jons", "some-password");
+        var request = modelGenerator.userCreateRequest("jack@google.com", "Jack", "Jons", "some-password");
 
         mockMvc.perform(
                 post("/api/users").contentType("application/json").content(objectMapper.writeValueAsString(request)))
@@ -77,7 +78,7 @@ class UsersControllerTest {
 
     @Test
     void shouldShowUser() throws Exception {
-        var user = userRepository.save(testDataFactory.user("john@google.com", "John", "Doe", "password"));
+        var user = userRepository.save(modelGenerator.user("john@google.com", "John", "Doe", "password"));
 
         mockMvc.perform(get("/api/users/{id}", user.getId())).andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(user.getId())).andExpect(jsonPath("$.email").value("john@google.com"))
@@ -93,8 +94,8 @@ class UsersControllerTest {
 
     @Test
     void shouldListUsers() throws Exception {
-        userRepository.save(testDataFactory.user("john@google.com", "John", "Doe", "password"));
-        userRepository.save(testDataFactory.user("jack@yahoo.com", "Jack", "Jons", "password"));
+        userRepository.save(modelGenerator.user("john@google.com", "John", "Doe", "password"));
+        userRepository.save(modelGenerator.user("jack@yahoo.com", "Jack", "Jons", "password"));
 
         mockMvc.perform(get("/api/users")).andExpect(status().isOk()).andExpect(header().string("X-Total-Count", "2"))
                 .andExpect(jsonPath("$", hasSize(2))).andExpect(jsonPath("$[0].email").value("john@google.com"))
@@ -106,9 +107,9 @@ class UsersControllerTest {
     @Test
     @WithMockUser(username = "jack@google.com")
     void shouldUpdateUserPartially() throws Exception {
-        var user = userRepository.save(testDataFactory.user("jack@google.com", "Jack", "Jons", "password"));
+        var user = userRepository.save(modelGenerator.user("jack@google.com", "Jack", "Jons", "password"));
 
-        var request = new UserUpdateRequest();
+        var request = Instancio.createBlank(UserUpdateRequest.class);
         request.setEmail("jack@yahoo.com");
         request.setPassword("new-password");
 
@@ -125,7 +126,7 @@ class UsersControllerTest {
     @Test
     @WithMockUser(username = "john@google.com")
     void shouldDeleteUser() throws Exception {
-        var user = userRepository.save(testDataFactory.user("john@google.com", "John", "Doe", "password"));
+        var user = userRepository.save(modelGenerator.user("john@google.com", "John", "Doe", "password"));
 
         mockMvc.perform(delete("/api/users/{id}", user.getId())).andExpect(status().isNoContent());
 
@@ -134,7 +135,7 @@ class UsersControllerTest {
 
     @Test
     void shouldReturnBadRequestForInvalidCreateRequest() throws Exception {
-        var request = testDataFactory.userCreateRequest("invalid-email", "Jack", "Jons", "12");
+        var request = modelGenerator.userCreateRequest("invalid-email", "Jack", "Jons", "12");
 
         mockMvc.perform(
                 post("/api/users").contentType("application/json").content(objectMapper.writeValueAsString(request)))
@@ -143,9 +144,9 @@ class UsersControllerTest {
 
     @Test
     void shouldReturnBadRequestForInvalidUpdateRequest() throws Exception {
-        var user = userRepository.save(testDataFactory.user("john@google.com", "John", "Doe", "password"));
+        var user = userRepository.save(modelGenerator.user("john@google.com", "John", "Doe", "password"));
 
-        var request = new UserUpdateRequest();
+        var request = Instancio.createBlank(UserUpdateRequest.class);
         request.setEmail("invalid-email");
 
         mockMvc.perform(put("/api/users/{id}", user.getId()).contentType("application/json")

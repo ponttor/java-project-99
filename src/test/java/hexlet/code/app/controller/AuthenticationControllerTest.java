@@ -5,7 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import hexlet.code.app.repository.UserRepository;
-import hexlet.code.app.util.TestDataFactory;
+import hexlet.code.app.util.ModelGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ class AuthenticationControllerTest {
     private UserRepository userRepository;
 
     @Autowired
-    private TestDataFactory testDataFactory;
+    private ModelGenerator modelGenerator;
 
     @Autowired
     private JwtDecoder jwtDecoder;
@@ -38,7 +38,7 @@ class AuthenticationControllerTest {
     void setUp() {
         userRepository.deleteAll();
 
-        userRepository.save(testDataFactory.userWithPassword(EMAIL, PASSWORD));
+        userRepository.save(modelGenerator.userWithPassword(EMAIL, PASSWORD));
     }
 
     @Test

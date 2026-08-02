@@ -2,6 +2,7 @@ package hexlet.code.app.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.instancio.Select.field;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -23,6 +24,7 @@ import hexlet.code.app.repository.UserRepository;
 import hexlet.code.app.specification.TaskSpecification;
 import java.util.List;
 import java.util.Optional;
+import org.instancio.Instancio;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -56,15 +58,13 @@ class TaskServiceUnitTest {
     @Test
     void shouldUpdateOnlyFieldsPresentInRequest() {
         var assignee = user(10L);
-        var task = new Task();
-        task.setName("Old title");
-        task.setDescription("Keep content");
-        task.setAssignee(assignee);
-        task.setIndex(3);
-        var request = new TaskUpdateRequest();
+        var task = Instancio.of(Task.class).ignore(field(Task::getTaskStatus)).ignore(field(Task::getLabels))
+                .set(field(Task::getName), "Old title").set(field(Task::getDescription), "Keep content")
+                .set(field(Task::getAssignee), assignee).set(field(Task::getIndex), 3).create();
+        var request = Instancio.createBlank(TaskUpdateRequest.class);
         request.setTitle("New title");
         request.setAssigneeId(null);
-        var response = new TaskResponse();
+        var response = Instancio.create(TaskResponse.class);
         when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
         when(taskRepository.save(task)).thenReturn(task);
         when(taskMapper.toResponse(task)).thenReturn(response);
@@ -81,16 +81,17 @@ class TaskServiceUnitTest {
 
     @Test
     void shouldResolveTaskRelationsWhenCreatingTask() {
-        var request = new TaskCreateRequest();
+        var request = Instancio.createBlank(TaskCreateRequest.class);
         request.setStatus("published");
         request.setAssigneeId(9L);
         request.setTaskLabelIds(List.of(2L, 1L, 2L));
-        var task = new Task();
+        var task = Instancio.of(Task.class).ignore(field(Task::getTaskStatus)).ignore(field(Task::getAssignee))
+                .ignore(field(Task::getLabels)).create();
         var status = taskStatus(5L, "published");
         var assignee = user(9L);
         var firstLabel = label(1L);
         var secondLabel = label(2L);
-        var response = new TaskResponse();
+        var response = Instancio.create(TaskResponse.class);
         when(taskMapper.toEntity(request)).thenReturn(task);
         when(taskStatusRepository.findBySlug("published")).thenReturn(Optional.of(status));
         when(userRepository.findById(9L)).thenReturn(Optional.of(assignee));
@@ -109,9 +110,10 @@ class TaskServiceUnitTest {
 
     @Test
     void shouldRejectMissingTaskStatusBeforeSavingTask() {
-        var request = new TaskCreateRequest();
+        var request = Instancio.createBlank(TaskCreateRequest.class);
         request.setStatus("missing");
-        var task = new Task();
+        var task = Instancio.of(Task.class).ignore(field(Task::getTaskStatus)).ignore(field(Task::getAssignee))
+                .ignore(field(Task::getLabels)).create();
         when(taskMapper.toEntity(request)).thenReturn(task);
         when(taskStatusRepository.findBySlug("missing")).thenReturn(Optional.empty());
 
@@ -123,21 +125,15 @@ class TaskServiceUnitTest {
     }
 
     private TaskStatus taskStatus(Long id, String slug) {
-        var status = new TaskStatus();
-        status.setId(id);
-        status.setSlug(slug);
-        return status;
+        return Instancio.of(TaskStatus.class).set(field(TaskStatus::getId), id).set(field(TaskStatus::getSlug), slug)
+                .create();
     }
 
     private User user(Long id) {
-        var user = new User();
-        user.setId(id);
-        return user;
+        return Instancio.of(User.class).set(field(User::getId), id).create();
     }
 
     private Label label(Long id) {
-        var label = new Label();
-        label.setId(id);
-        return label;
+        return Instancio.of(Label.class).ignore(field(Label::getTasks)).set(field(Label::getId), id).create();
     }
 }

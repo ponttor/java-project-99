@@ -3,22 +3,21 @@ package hexlet.code.app.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import hexlet.code.app.config.JpaConfig;
+import hexlet.code.app.config.PasswordConfig;
 import hexlet.code.app.dto.task.TaskFilterParams;
-import hexlet.code.app.model.Label;
 import hexlet.code.app.model.Task;
-import hexlet.code.app.model.TaskStatus;
-import hexlet.code.app.model.User;
 import hexlet.code.app.specification.TaskSpecification;
+import hexlet.code.app.util.ModelGenerator;
 import jakarta.persistence.EntityManager;
-import java.util.LinkedHashSet;
 import org.hibernate.Hibernate;
+import org.instancio.Instancio;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
 @DataJpaTest
-@Import({JpaConfig.class, TaskSpecification.class})
+@Import({JpaConfig.class, PasswordConfig.class, TaskSpecification.class, ModelGenerator.class})
 class TaskRepositoryJpaTest {
 
     @Autowired
@@ -39,22 +38,25 @@ class TaskRepositoryJpaTest {
     @Autowired
     private TaskSpecification taskSpecification;
 
+    @Autowired
+    private ModelGenerator modelGenerator;
+
     @Test
     void shouldCombineAllTaskSpecifications() {
-        var draft = taskStatusRepository.save(taskStatus("Draft", "draft"));
-        var published = taskStatusRepository.save(taskStatus("Published", "published"));
-        var assignee = userRepository.save(user("worker@example.com"));
-        var anotherAssignee = userRepository.save(user("other@example.com"));
-        var bug = labelRepository.save(label("bug"));
-        var feature = labelRepository.save(label("feature"));
+        var draft = taskStatusRepository.save(modelGenerator.taskStatus("Draft", "draft"));
+        var published = taskStatusRepository.save(modelGenerator.taskStatus("Published", "published"));
+        var assignee = userRepository.save(modelGenerator.user("worker@example.com"));
+        var anotherAssignee = userRepository.save(modelGenerator.user("other@example.com"));
+        var bug = labelRepository.save(modelGenerator.label("bug"));
+        var feature = labelRepository.save(modelGenerator.label("feature"));
 
-        var expected = task("Create RELEASE", published, assignee, bug);
+        var expected = modelGenerator.taskWithLabels("Create RELEASE", published, assignee, bug);
         taskRepository.save(expected);
-        taskRepository.save(task("Create draft", draft, assignee, bug));
-        taskRepository.save(task("Publish release", published, anotherAssignee, bug));
-        taskRepository.save(task("Create feature", published, assignee, feature));
+        taskRepository.save(modelGenerator.taskWithLabels("Create draft", draft, assignee, bug));
+        taskRepository.save(modelGenerator.taskWithLabels("Publish release", published, anotherAssignee, bug));
+        taskRepository.save(modelGenerator.taskWithLabels("Create feature", published, assignee, feature));
 
-        var params = new TaskFilterParams();
+        var params = Instancio.createBlank(TaskFilterParams.class);
         params.setTitleCont("release");
         params.setAssigneeId(assignee.getId());
         params.setStatus("published");
@@ -67,25 +69,25 @@ class TaskRepositoryJpaTest {
 
     @Test
     void shouldReturnAllTasksWhenFiltersAreAbsent() {
-        var status = taskStatusRepository.save(taskStatus("Draft", "draft"));
-        var first = taskRepository.save(task("First", status));
-        var second = taskRepository.save(task("Second", status));
+        var status = taskStatusRepository.save(modelGenerator.taskStatus("Draft", "draft"));
+        var first = taskRepository.save(modelGenerator.task("First", status));
+        var second = taskRepository.save(modelGenerator.task("Second", status));
 
-        var result = taskRepository.findAll(taskSpecification.build(new TaskFilterParams()));
+        var result = taskRepository.findAll(taskSpecification.build(Instancio.createBlank(TaskFilterParams.class)));
 
         assertThat(result).extracting(Task::getId).containsExactlyInAnyOrder(first.getId(), second.getId());
     }
 
     @Test
     void shouldLoadTaskRelationsWithRepositoryEntityGraph() {
-        var status = taskStatusRepository.save(taskStatus("Draft", "draft"));
-        var assignee = userRepository.save(user("worker@example.com"));
-        var bug = labelRepository.save(label("bug"));
-        var task = taskRepository.save(task("Task", status, assignee, bug));
+        var status = taskStatusRepository.save(modelGenerator.taskStatus("Draft", "draft"));
+        var assignee = userRepository.save(modelGenerator.user("worker@example.com"));
+        var bug = labelRepository.save(modelGenerator.label("bug"));
+        var task = taskRepository.save(modelGenerator.taskWithLabels("Task", status, assignee, bug));
         entityManager.flush();
         entityManager.clear();
 
-        var result = taskRepository.findAll(taskSpecification.build(new TaskFilterParams()));
+        var result = taskRepository.findAll(taskSpecification.build(Instancio.createBlank(TaskFilterParams.class)));
 
         assertThat(result).hasSize(1);
         var loadedTask = result.getFirst();
@@ -95,36 +97,4 @@ class TaskRepositoryJpaTest {
         assertThat(Hibernate.isInitialized(loadedTask.getLabels())).isTrue();
     }
 
-    private Task task(String name, TaskStatus status) {
-        return task(name, status, null);
-    }
-
-    private Task task(String name, TaskStatus status, User assignee, Label... labels) {
-        var task = new Task();
-        task.setName(name);
-        task.setTaskStatus(status);
-        task.setAssignee(assignee);
-        task.setLabels(new LinkedHashSet<>(java.util.List.of(labels)));
-        return task;
-    }
-
-    private TaskStatus taskStatus(String name, String slug) {
-        var status = new TaskStatus();
-        status.setName(name);
-        status.setSlug(slug);
-        return status;
-    }
-
-    private User user(String email) {
-        var user = new User();
-        user.setEmail(email);
-        user.setPassword("password");
-        return user;
-    }
-
-    private Label label(String name) {
-        var label = new Label();
-        label.setName(name);
-        return label;
-    }
 }

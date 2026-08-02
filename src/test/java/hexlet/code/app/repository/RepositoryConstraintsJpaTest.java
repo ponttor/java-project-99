@@ -4,9 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import hexlet.code.app.config.JpaConfig;
-import hexlet.code.app.model.Label;
-import hexlet.code.app.model.TaskStatus;
-import hexlet.code.app.model.User;
+import hexlet.code.app.config.PasswordConfig;
+import hexlet.code.app.util.ModelGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -14,7 +13,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
 
 @DataJpaTest
-@Import(JpaConfig.class)
+@Import({JpaConfig.class, PasswordConfig.class, ModelGenerator.class})
 class RepositoryConstraintsJpaTest {
 
     @Autowired
@@ -26,11 +25,14 @@ class RepositoryConstraintsJpaTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private ModelGenerator modelGenerator;
+
     @Test
     void shouldFindResourcesByTheirNaturalKeys() {
-        var label = labelRepository.save(label("feature"));
-        var status = taskStatusRepository.save(taskStatus("Draft", "draft"));
-        var user = userRepository.save(user("user@example.com"));
+        var label = labelRepository.save(modelGenerator.label("feature"));
+        var status = taskStatusRepository.save(modelGenerator.taskStatus("Draft", "draft"));
+        var user = userRepository.save(modelGenerator.user("user@example.com"));
 
         assertThat(labelRepository.findByName("feature")).contains(label);
         assertThat(taskStatusRepository.findBySlug("draft")).contains(status);
@@ -39,8 +41,8 @@ class RepositoryConstraintsJpaTest {
 
     @Test
     void shouldRejectDuplicateLabelName() {
-        labelRepository.saveAndFlush(label("feature"));
-        var duplicateLabel = label("feature");
+        labelRepository.saveAndFlush(modelGenerator.label("feature"));
+        var duplicateLabel = modelGenerator.label("feature");
 
         assertThatThrownBy(() -> labelRepository.saveAndFlush(duplicateLabel))
                 .isInstanceOf(DataIntegrityViolationException.class);
@@ -48,8 +50,8 @@ class RepositoryConstraintsJpaTest {
 
     @Test
     void shouldRejectDuplicateTaskStatusName() {
-        taskStatusRepository.saveAndFlush(taskStatus("Draft", "draft"));
-        var duplicateStatusName = taskStatus("Draft", "another_slug");
+        taskStatusRepository.saveAndFlush(modelGenerator.taskStatus("Draft", "draft"));
+        var duplicateStatusName = modelGenerator.taskStatus("Draft", "another_slug");
 
         assertThatThrownBy(() -> taskStatusRepository.saveAndFlush(duplicateStatusName))
                 .isInstanceOf(DataIntegrityViolationException.class);
@@ -57,8 +59,8 @@ class RepositoryConstraintsJpaTest {
 
     @Test
     void shouldRejectDuplicateTaskStatusSlug() {
-        taskStatusRepository.saveAndFlush(taskStatus("Draft", "draft"));
-        var duplicateStatusSlug = taskStatus("Another name", "draft");
+        taskStatusRepository.saveAndFlush(modelGenerator.taskStatus("Draft", "draft"));
+        var duplicateStatusSlug = modelGenerator.taskStatus("Another name", "draft");
 
         assertThatThrownBy(() -> taskStatusRepository.saveAndFlush(duplicateStatusSlug))
                 .isInstanceOf(DataIntegrityViolationException.class);
@@ -66,30 +68,11 @@ class RepositoryConstraintsJpaTest {
 
     @Test
     void shouldRejectDuplicateUserEmail() {
-        userRepository.saveAndFlush(user("user@example.com"));
-        var duplicateUser = user("user@example.com");
+        userRepository.saveAndFlush(modelGenerator.user("user@example.com"));
+        var duplicateUser = modelGenerator.user("user@example.com");
 
         assertThatThrownBy(() -> userRepository.saveAndFlush(duplicateUser))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
-    private Label label(String name) {
-        var label = new Label();
-        label.setName(name);
-        return label;
-    }
-
-    private TaskStatus taskStatus(String name, String slug) {
-        var status = new TaskStatus();
-        status.setName(name);
-        status.setSlug(slug);
-        return status;
-    }
-
-    private User user(String email) {
-        var user = new User();
-        user.setEmail(email);
-        user.setPassword("password");
-        return user;
-    }
 }

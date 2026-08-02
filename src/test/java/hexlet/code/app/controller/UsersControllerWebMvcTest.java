@@ -18,6 +18,7 @@ import hexlet.code.app.exception.ResourceConflictException;
 import hexlet.code.app.exception.ResourceNotFoundException;
 import hexlet.code.app.service.UserService;
 import java.util.List;
+import org.instancio.Instancio;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -90,7 +91,7 @@ class UsersControllerWebMvcTest {
     }
 
     private UserResponse userResponse(Long id, String email) {
-        var response = new UserResponse();
+        var response = Instancio.createBlank(UserResponse.class);
         response.setId(id);
         response.setEmail(email);
         return response;

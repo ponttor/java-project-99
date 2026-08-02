@@ -1,6 +1,7 @@
 package hexlet.code.app.service;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.instancio.Select.field;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -10,6 +11,7 @@ import hexlet.code.app.mapper.LabelMapper;
 import hexlet.code.app.model.Label;
 import hexlet.code.app.repository.LabelRepository;
 import java.util.Optional;
+import org.instancio.Instancio;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,7 +33,7 @@ class LabelServiceUnitTest {
 
     @Test
     void shouldTranslateDeleteConstraintViolationIntoResourceConflict() {
-        var label = new Label();
+        var label = Instancio.of(Label.class).ignore(field(Label::getTasks)).create();
         var databaseException = new DataIntegrityViolationException("foreign key violation");
         when(labelRepository.findById(1L)).thenReturn(Optional.of(label));
         doThrow(databaseException).when(labelRepository).flush();

@@ -11,6 +11,7 @@ import hexlet.code.app.mapper.UserMapper;
 import hexlet.code.app.model.User;
 import hexlet.code.app.repository.UserRepository;
 import java.util.Optional;
+import org.instancio.Instancio;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -35,10 +36,10 @@ class UserServiceUnitTest {
 
     @Test
     void shouldEncodePasswordWhenCreatingUser() {
-        var request = new UserCreateRequest();
+        var request = Instancio.createBlank(UserCreateRequest.class);
         request.setPassword("plain-password");
-        var user = new User();
-        var response = new UserResponse();
+        var user = Instancio.create(User.class);
+        var response = Instancio.create(UserResponse.class);
         when(userMapper.toEntity(request)).thenReturn(user);
         when(passwordEncoder.encode("plain-password")).thenReturn("encoded-password");
         when(userRepository.save(user)).thenReturn(user);
@@ -53,10 +54,10 @@ class UserServiceUnitTest {
 
     @Test
     void shouldEncodeNewPasswordWhenUpdatingUser() {
-        var request = new UserUpdateRequest();
+        var request = Instancio.createBlank(UserUpdateRequest.class);
         request.setPassword("new-password");
-        var user = new User();
-        var response = new UserResponse();
+        var user = Instancio.create(User.class);
+        var response = Instancio.create(UserResponse.class);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(passwordEncoder.encode("new-password")).thenReturn("new-encoded-password");
         when(userRepository.save(user)).thenReturn(user);

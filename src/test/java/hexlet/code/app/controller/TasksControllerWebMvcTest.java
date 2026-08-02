@@ -18,6 +18,7 @@ import hexlet.code.app.dto.task.TaskResponse;
 import hexlet.code.app.dto.task.TaskUpdateRequest;
 import hexlet.code.app.service.TaskService;
 import java.util.List;
+import org.instancio.Instancio;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +74,7 @@ class TasksControllerWebMvcTest {
     }
 
     private TaskResponse taskResponse(Long id, String title) {
-        var response = new TaskResponse();
+        var response = Instancio.createBlank(TaskResponse.class);
         response.setId(id);
         response.setTitle(title);
         return response;
