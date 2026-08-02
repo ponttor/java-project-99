@@ -5,22 +5,28 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Duration;
 
+import hexlet.code.app.config.JwtConfig;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
 
-@SpringBootTest
 class JwtServiceTest {
 
     private static final String EMAIL = "ivan@google.com";
+    private static final String SECRET = "local-test-secret-key-with-at-least-thirty-two-bytes";
 
-    @Autowired
     private JwtService jwtService;
 
-    @Autowired
     private JwtDecoder jwtDecoder;
+
+    @BeforeEach
+    void setUp() {
+        var jwtConfig = new JwtConfig();
+        var secretKey = jwtConfig.jwtSecretKey(SECRET);
+        jwtService = new JwtService(jwtConfig.jwtEncoder(secretKey));
+        jwtDecoder = jwtConfig.jwtDecoder(secretKey);
+    }
 
     @Test
     void shouldGenerateSignedTokenWithEmailAndExpiration() {
@@ -45,5 +51,14 @@ class JwtServiceTest {
 
         assertThatThrownBy(() -> jwtDecoder.decode(modifiedToken))
                 .isInstanceOf(JwtException.class);
+    }
+
+    @Test
+    void shouldRejectSecretShorterThanThirtyTwoBytes() {
+        var jwtConfig = new JwtConfig();
+
+        assertThatThrownBy(() -> jwtConfig.jwtSecretKey("too-short"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("JWT secret must contain at least 32 bytes");
     }
 }

@@ -1,5 +1,6 @@
 package hexlet.code.app.controller;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -8,15 +9,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import tools.jackson.databind.ObjectMapper;
 import hexlet.code.app.dto.user.UserUpdateRequest;
 import hexlet.code.app.repository.UserRepository;
-import hexlet.code.app.service.JwtService;
 import hexlet.code.app.util.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
@@ -36,9 +36,6 @@ class UserAuthorizationTest {
     private UserRepository userRepository;
 
     @Autowired
-    private JwtService jwtService;
-
-    @Autowired
     private TestDataFactory testDataFactory;
 
     @BeforeEach
@@ -54,7 +51,7 @@ class UserAuthorizationTest {
         request.setFirstName("Changed");
 
         mockMvc.perform(put("/api/users/{id}", owner.getId())
-                        .header(HttpHeaders.AUTHORIZATION, bearerToken(OTHER_EMAIL))
+                        .with(jwtFor(OTHER_EMAIL))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden());
@@ -67,7 +64,7 @@ class UserAuthorizationTest {
         request.setFirstName("Changed");
 
         mockMvc.perform(put("/api/users/{id}", owner.getId())
-                        .header(HttpHeaders.AUTHORIZATION, bearerToken(OWNER_EMAIL))
+                        .with(jwtFor(OWNER_EMAIL))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -79,7 +76,7 @@ class UserAuthorizationTest {
         var owner = userRepository.save(testDataFactory.user(OWNER_EMAIL));
 
         mockMvc.perform(delete("/api/users/{id}", owner.getId())
-                        .header(HttpHeaders.AUTHORIZATION, bearerToken(OTHER_EMAIL)))
+                        .with(jwtFor(OTHER_EMAIL)))
                 .andExpect(status().isForbidden());
     }
 
@@ -88,11 +85,11 @@ class UserAuthorizationTest {
         var owner = userRepository.save(testDataFactory.user(OWNER_EMAIL));
 
         mockMvc.perform(delete("/api/users/{id}", owner.getId())
-                        .header(HttpHeaders.AUTHORIZATION, bearerToken(OWNER_EMAIL)))
+                        .with(jwtFor(OWNER_EMAIL)))
                 .andExpect(status().isNoContent());
     }
 
-    private String bearerToken(String email) {
-        return "Bearer " + jwtService.generateToken(email);
+    private JwtRequestPostProcessor jwtFor(String email) {
+        return jwt().jwt(token -> token.subject(email));
     }
 }
