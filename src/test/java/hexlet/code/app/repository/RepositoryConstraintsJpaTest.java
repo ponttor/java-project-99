@@ -40,32 +40,36 @@ class RepositoryConstraintsJpaTest {
     @Test
     void shouldRejectDuplicateLabelName() {
         labelRepository.saveAndFlush(label("feature"));
+        var duplicateLabel = label("feature");
 
-        assertThatThrownBy(() -> labelRepository.saveAndFlush(label("feature")))
+        assertThatThrownBy(() -> labelRepository.saveAndFlush(duplicateLabel))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
     void shouldRejectDuplicateTaskStatusName() {
         taskStatusRepository.saveAndFlush(taskStatus("Draft", "draft"));
+        var duplicateStatusName = taskStatus("Draft", "another_slug");
 
-        assertThatThrownBy(() -> taskStatusRepository.saveAndFlush(taskStatus("Draft", "another_slug")))
+        assertThatThrownBy(() -> taskStatusRepository.saveAndFlush(duplicateStatusName))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
     void shouldRejectDuplicateTaskStatusSlug() {
         taskStatusRepository.saveAndFlush(taskStatus("Draft", "draft"));
+        var duplicateStatusSlug = taskStatus("Another name", "draft");
 
-        assertThatThrownBy(() -> taskStatusRepository.saveAndFlush(taskStatus("Another name", "draft")))
+        assertThatThrownBy(() -> taskStatusRepository.saveAndFlush(duplicateStatusSlug))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
     void shouldRejectDuplicateUserEmail() {
         userRepository.saveAndFlush(user("user@example.com"));
+        var duplicateUser = user("user@example.com");
 
-        assertThatThrownBy(() -> userRepository.saveAndFlush(user("user@example.com")))
+        assertThatThrownBy(() -> userRepository.saveAndFlush(duplicateUser))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 
