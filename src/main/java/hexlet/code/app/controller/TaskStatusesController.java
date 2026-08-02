@@ -2,9 +2,9 @@ package hexlet.code.app.controller;
 
 import java.util.List;
 
-import hexlet.code.app.dto.TaskStatusCreateRequest;
-import hexlet.code.app.dto.TaskStatusResponse;
-import hexlet.code.app.dto.TaskStatusUpdateRequest;
+import hexlet.code.app.dto.taskstatus.TaskStatusCreateRequest;
+import hexlet.code.app.dto.taskstatus.TaskStatusResponse;
+import hexlet.code.app.dto.taskstatus.TaskStatusUpdateRequest;
 import hexlet.code.app.service.TaskStatusService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -13,8 +13,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import tools.jackson.databind.ObjectMapper;
 import hexlet.code.app.component.DataInitializer;
-import hexlet.code.app.dto.TaskStatusCreateRequest;
-import hexlet.code.app.dto.TaskStatusUpdateRequest;
+import hexlet.code.app.dto.taskstatus.TaskStatusCreateRequest;
+import hexlet.code.app.dto.taskstatus.TaskStatusUpdateRequest;
 import hexlet.code.app.model.TaskStatus;
 import hexlet.code.app.repository.TaskStatusRepository;
 import hexlet.code.app.util.TestDataFactory;

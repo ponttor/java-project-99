@@ -1,4 +1,4 @@
-package hexlet.code.app.dto;
+package hexlet.code.app.dto.taskstatus;
 
 import java.time.LocalDateTime;
 
@@ -8,15 +8,13 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class UserResponse {
+public class TaskStatusResponse {
 
     private Long id;
 
-    private String email;
+    private String name;
 
-    private String firstName;
-
-    private String lastName;
+    private String slug;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime createdAt;

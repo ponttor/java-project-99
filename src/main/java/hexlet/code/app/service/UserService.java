@@ -2,9 +2,9 @@ package hexlet.code.app.service;
 
 import java.util.List;
 
-import hexlet.code.app.dto.UserCreateRequest;
-import hexlet.code.app.dto.UserResponse;
-import hexlet.code.app.dto.UserUpdateRequest;
+import hexlet.code.app.dto.user.UserCreateRequest;
+import hexlet.code.app.dto.user.UserResponse;
+import hexlet.code.app.dto.user.UserUpdateRequest;
 import hexlet.code.app.exception.ResourceNotFoundException;
 import hexlet.code.app.mapper.UserMapper;
 import hexlet.code.app.model.User;

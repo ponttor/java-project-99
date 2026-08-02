@@ -2,9 +2,9 @@ package hexlet.code.app.service;
 
 import java.util.List;
 
-import hexlet.code.app.dto.LabelCreateRequest;
-import hexlet.code.app.dto.LabelResponse;
-import hexlet.code.app.dto.LabelUpdateRequest;
+import hexlet.code.app.dto.label.LabelCreateRequest;
+import hexlet.code.app.dto.label.LabelResponse;
+import hexlet.code.app.dto.label.LabelUpdateRequest;
 import hexlet.code.app.exception.ResourceNotFoundException;
 import hexlet.code.app.mapper.LabelMapper;
 import hexlet.code.app.model.Label;

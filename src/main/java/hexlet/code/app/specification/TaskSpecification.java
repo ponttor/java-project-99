@@ -2,7 +2,7 @@ package hexlet.code.app.specification;
 
 import java.util.Locale;
 
-import hexlet.code.app.dto.TaskFilterParams;
+import hexlet.code.app.dto.task.TaskFilterParams;
 import hexlet.code.app.model.Task;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;

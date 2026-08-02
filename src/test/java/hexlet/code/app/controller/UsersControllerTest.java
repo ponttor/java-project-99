@@ -12,7 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import tools.jackson.databind.ObjectMapper;
 import hexlet.code.app.component.DataInitializer;
-import hexlet.code.app.dto.UserUpdateRequest;
+import hexlet.code.app.dto.user.UserUpdateRequest;
 import hexlet.code.app.repository.UserRepository;
 import hexlet.code.app.util.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;

@@ -3,8 +3,8 @@ package hexlet.code.app.mapper;
 import java.util.List;
 import java.util.Set;
 
-import hexlet.code.app.dto.TaskCreateRequest;
-import hexlet.code.app.dto.TaskResponse;
+import hexlet.code.app.dto.task.TaskCreateRequest;
+import hexlet.code.app.dto.task.TaskResponse;
 import hexlet.code.app.model.Label;
 import hexlet.code.app.model.Task;
 import org.mapstruct.Mapper;

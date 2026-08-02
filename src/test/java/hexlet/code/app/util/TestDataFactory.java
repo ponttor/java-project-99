@@ -2,7 +2,7 @@ package hexlet.code.app.util;
 
 import java.util.Set;
 
-import hexlet.code.app.dto.UserCreateRequest;
+import hexlet.code.app.dto.user.UserCreateRequest;
 import hexlet.code.app.model.Label;
 import hexlet.code.app.model.Task;
 import hexlet.code.app.model.TaskStatus;

@@ -1,8 +1,8 @@
 package hexlet.code.app.mapper;
 
-import hexlet.code.app.dto.UserCreateRequest;
-import hexlet.code.app.dto.UserResponse;
-import hexlet.code.app.dto.UserUpdateRequest;
+import hexlet.code.app.dto.user.UserCreateRequest;
+import hexlet.code.app.dto.user.UserResponse;
+import hexlet.code.app.dto.user.UserUpdateRequest;
 import hexlet.code.app.model.User;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;

@@ -1,8 +1,8 @@
 package hexlet.code.app.mapper;
 
-import hexlet.code.app.dto.LabelCreateRequest;
-import hexlet.code.app.dto.LabelResponse;
-import hexlet.code.app.dto.LabelUpdateRequest;
+import hexlet.code.app.dto.label.LabelCreateRequest;
+import hexlet.code.app.dto.label.LabelResponse;
+import hexlet.code.app.dto.label.LabelUpdateRequest;
 import hexlet.code.app.model.Label;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

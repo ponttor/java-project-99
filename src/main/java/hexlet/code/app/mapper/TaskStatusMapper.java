@@ -1,8 +1,8 @@
 package hexlet.code.app.mapper;
 
-import hexlet.code.app.dto.TaskStatusCreateRequest;
-import hexlet.code.app.dto.TaskStatusResponse;
-import hexlet.code.app.dto.TaskStatusUpdateRequest;
+import hexlet.code.app.dto.taskstatus.TaskStatusCreateRequest;
+import hexlet.code.app.dto.taskstatus.TaskStatusResponse;
+import hexlet.code.app.dto.taskstatus.TaskStatusUpdateRequest;
 import hexlet.code.app.model.TaskStatus;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;

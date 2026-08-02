@@ -2,9 +2,9 @@ package hexlet.code.app.controller;
 
 import java.util.List;
 
-import hexlet.code.app.dto.LabelCreateRequest;
-import hexlet.code.app.dto.LabelResponse;
-import hexlet.code.app.dto.LabelUpdateRequest;
+import hexlet.code.app.dto.label.LabelCreateRequest;
+import hexlet.code.app.dto.label.LabelResponse;
+import hexlet.code.app.dto.label.LabelUpdateRequest;
 import hexlet.code.app.service.LabelService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

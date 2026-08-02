@@ -1,4 +1,4 @@
-package hexlet.code.app.dto;
+package hexlet.code.app.dto.task;
 
 import java.time.LocalDateTime;
 import java.util.List;

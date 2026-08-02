@@ -2,9 +2,9 @@ package hexlet.code.app.controller;
 
 import java.util.List;
 
-import hexlet.code.app.dto.UserCreateRequest;
-import hexlet.code.app.dto.UserResponse;
-import hexlet.code.app.dto.UserUpdateRequest;
+import hexlet.code.app.dto.user.UserCreateRequest;
+import hexlet.code.app.dto.user.UserResponse;
+import hexlet.code.app.dto.user.UserUpdateRequest;
 import hexlet.code.app.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

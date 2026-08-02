@@ -6,7 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import tools.jackson.databind.ObjectMapper;
-import hexlet.code.app.dto.UserUpdateRequest;
+import hexlet.code.app.dto.user.UserUpdateRequest;
 import hexlet.code.app.repository.UserRepository;
 import hexlet.code.app.service.JwtService;
 import hexlet.code.app.util.TestDataFactory;

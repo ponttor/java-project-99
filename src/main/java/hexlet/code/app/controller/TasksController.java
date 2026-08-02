@@ -2,10 +2,10 @@ package hexlet.code.app.controller;
 
 import java.util.List;
 
-import hexlet.code.app.dto.TaskCreateRequest;
-import hexlet.code.app.dto.TaskFilterParams;
-import hexlet.code.app.dto.TaskResponse;
-import hexlet.code.app.dto.TaskUpdateRequest;
+import hexlet.code.app.dto.task.TaskCreateRequest;
+import hexlet.code.app.dto.task.TaskFilterParams;
+import hexlet.code.app.dto.task.TaskResponse;
+import hexlet.code.app.dto.task.TaskUpdateRequest;
 import hexlet.code.app.service.TaskService;
 import org.springdoc.core.annotations.ParameterObject;
 import jakarta.validation.Valid;

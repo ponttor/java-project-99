@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import hexlet.code.app.dto.TaskCreateRequest;
-import hexlet.code.app.dto.TaskFilterParams;
-import hexlet.code.app.dto.TaskResponse;
-import hexlet.code.app.dto.TaskUpdateRequest;
+import hexlet.code.app.dto.task.TaskCreateRequest;
+import hexlet.code.app.dto.task.TaskFilterParams;
+import hexlet.code.app.dto.task.TaskResponse;
+import hexlet.code.app.dto.task.TaskUpdateRequest;
 import hexlet.code.app.exception.ResourceNotFoundException;
 import hexlet.code.app.mapper.TaskMapper;
 import hexlet.code.app.model.Label;
