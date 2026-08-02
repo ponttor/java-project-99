@@ -286,6 +286,12 @@ class TasksControllerTest {
         mockMvc.perform(
                 put("/api/tasks/{id}", task.getId()).contentType("application/json").content("{\"title\":null}"))
                 .andExpect(status().isBadRequest());
+        mockMvc.perform(
+                put("/api/tasks/{id}", task.getId()).contentType("application/json").content("{\"status\":null}"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(
+                put("/api/tasks/{id}", task.getId()).contentType("application/json").content("{\"taskLabelIds\":null}"))
+                .andExpect(status().isBadRequest());
 
         mockMvc.perform(post("/api/tasks").contentType("application/json").content("{\"title\":\"Task\"}"))
                 .andExpect(status().isBadRequest());

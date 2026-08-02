@@ -25,7 +25,7 @@ public class LabelService {
 
     @Transactional(readOnly = true)
     public List<LabelResponse> findAll() {
-        return labelRepository.findAll().stream().map(labelMapper::toResponse).toList();
+        return labelMapper.toResponses(labelRepository.findAll());
     }
 
     @Transactional(readOnly = true)

@@ -42,7 +42,7 @@ public class TaskService {
 
     @Transactional(readOnly = true)
     public List<TaskResponse> findAll(TaskFilterParams params) {
-        return taskRepository.findAll(taskSpecification.build(params)).stream().map(taskMapper::toResponse).toList();
+        return taskMapper.toResponses(taskRepository.findAll(taskSpecification.build(params)));
     }
 
     @Transactional(readOnly = true)
@@ -73,16 +73,17 @@ public class TaskService {
 
         taskMapper.update(request, task);
 
-        if (request.isAssigneeIdPresent()) {
-            task.setAssignee(request.getAssigneeId() == null ? null : findAssignee(request.getAssigneeId()));
+        if (request.getAssigneeId().isPresent()) {
+            var assigneeId = request.getAssigneeId().orElse(null);
+            task.setAssignee(assigneeId == null ? null : findAssignee(assigneeId));
         }
 
-        if (request.isStatusPresent()) {
-            task.setTaskStatus(findTaskStatus(request.getStatus()));
+        if (request.getStatus().isPresent()) {
+            task.setTaskStatus(findTaskStatus(request.getStatus().orElse(null)));
         }
 
-        if (request.isTaskLabelIdsPresent()) {
-            task.setLabels(findLabels(request.getTaskLabelIds()));
+        if (request.getTaskLabelIds().isPresent()) {
+            task.setLabels(findLabels(request.getTaskLabelIds().orElse(null)));
         }
 
         return taskMapper.toResponse(taskRepository.save(task));

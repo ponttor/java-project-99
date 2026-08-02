@@ -4,17 +4,19 @@ import hexlet.code.app.dto.user.UserCreateRequest;
 import hexlet.code.app.dto.user.UserResponse;
 import hexlet.code.app.dto.user.UserUpdateRequest;
 import hexlet.code.app.model.User;
+import java.util.List;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+@Mapper(config = MapperConfiguration.class)
 public interface UserMapper {
 
     UserResponse toResponse(User user);
+
+    List<UserResponse> toResponses(List<User> users);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "password", ignore = true)

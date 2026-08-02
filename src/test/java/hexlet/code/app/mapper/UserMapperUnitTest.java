@@ -22,9 +22,9 @@ class UserMapperUnitTest {
         var user = userMapper.toEntity(request);
         var response = userMapper.toResponse(user);
 
-        assertThat(response.getEmail()).isEqualTo("user@example.com");
-        assertThat(response.getFirstName()).isEqualTo("John");
-        assertThat(response.getLastName()).isEqualTo("Doe");
+        assertThat(response.email()).isEqualTo("user@example.com");
+        assertThat(response.firstName()).isEqualTo("John");
+        assertThat(response.lastName()).isEqualTo("Doe");
     }
 
     @Test

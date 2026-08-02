@@ -56,9 +56,6 @@ class LabelsControllerWebMvcTest {
     }
 
     private LabelResponse labelResponse(Long id, String name) {
-        var response = new LabelResponse();
-        response.setId(id);
-        response.setName(name);
-        return response;
+        return new LabelResponse(id, name, null);
     }
 }

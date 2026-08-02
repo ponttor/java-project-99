@@ -22,7 +22,7 @@ public class TaskStatusService {
     private final TaskStatusMapper taskStatusMapper;
 
     public List<TaskStatusResponse> findAll() {
-        return taskStatusRepository.findAll().stream().map(taskStatusMapper::toResponse).toList();
+        return taskStatusMapper.toResponses(taskStatusRepository.findAll());
     }
 
     public TaskStatusResponse findById(Long id) {

@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import hexlet.code.app.dto.PatchField;
 import hexlet.code.app.dto.task.TaskCreateRequest;
 import hexlet.code.app.dto.task.TaskResponse;
 import hexlet.code.app.dto.task.TaskUpdateRequest;
@@ -62,8 +63,8 @@ class TaskServiceUnitTest {
                 .set(field(Task::getName), "Old title").set(field(Task::getDescription), "Keep content")
                 .set(field(Task::getAssignee), assignee).set(field(Task::getIndex), 3).create();
         var request = Instancio.createBlank(TaskUpdateRequest.class);
-        request.setTitle("New title");
-        request.setAssigneeId(null);
+        request.setTitle(PatchField.of("New title"));
+        request.setAssigneeId(PatchField.of(null));
         var response = Instancio.create(TaskResponse.class);
         when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
         when(taskRepository.save(task)).thenReturn(task);

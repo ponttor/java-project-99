@@ -3,6 +3,7 @@ package hexlet.code.app.mapper;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.instancio.Select.field;
 
+import hexlet.code.app.dto.PatchField;
 import hexlet.code.app.dto.task.TaskUpdateRequest;
 import hexlet.code.app.model.Task;
 import org.instancio.Instancio;
@@ -10,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 class TaskMapperUnitTest {
 
-    private final TaskMapper taskMapper = new TaskMapperImpl();
+    private final TaskMapper taskMapper = new TaskMapperImpl(new PatchFieldMapperImpl());
 
     @Test
     void shouldUpdateOnlyPresentScalarFields() {
@@ -18,8 +19,8 @@ class TaskMapperUnitTest {
                 .ignore(field(Task::getLabels)).set(field(Task::getName), "Old title")
                 .set(field(Task::getDescription), "Old content").set(field(Task::getIndex), 10).create();
         var request = Instancio.createBlank(TaskUpdateRequest.class);
-        request.setTitle("New title");
-        request.setContent(null);
+        request.setTitle(PatchField.of("New title"));
+        request.setContent(PatchField.of(null));
 
         taskMapper.update(request, task);
 

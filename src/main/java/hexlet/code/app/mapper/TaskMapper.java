@@ -7,12 +7,13 @@ import hexlet.code.app.model.Label;
 import hexlet.code.app.model.Task;
 import java.util.List;
 import java.util.Set;
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+@Mapper(config = MapperConfiguration.class, uses = PatchFieldMapper.class)
 public abstract class TaskMapper {
 
     @Mapping(target = "title", source = "name")
@@ -21,6 +22,8 @@ public abstract class TaskMapper {
     @Mapping(target = "assigneeId", source = "assignee.id")
     @Mapping(target = "taskLabelIds", source = "labels")
     public abstract TaskResponse toResponse(Task task);
+
+    public abstract List<TaskResponse> toResponses(List<Task> tasks);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "name", source = "title")
@@ -31,19 +34,15 @@ public abstract class TaskMapper {
     @Mapping(target = "createdAt", ignore = true)
     public abstract Task toEntity(TaskCreateRequest request);
 
-    public void update(TaskUpdateRequest request, @MappingTarget Task task) {
-        if (request.isIndexPresent()) {
-            task.setIndex(request.getIndex());
-        }
-
-        if (request.isTitlePresent()) {
-            task.setName(request.getTitle());
-        }
-
-        if (request.isContentPresent()) {
-            task.setDescription(request.getContent());
-        }
-    }
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "name", source = "title")
+    @Mapping(target = "description", source = "content")
+    @Mapping(target = "taskStatus", ignore = true)
+    @Mapping(target = "assignee", ignore = true)
+    @Mapping(target = "labels", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    public abstract void update(TaskUpdateRequest request, @MappingTarget Task task);
 
     public List<Long> mapLabelIds(Set<Label> labels) {
         return labels.stream().map(Label::getId).toList();

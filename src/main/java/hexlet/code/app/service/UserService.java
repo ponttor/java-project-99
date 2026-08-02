@@ -25,7 +25,7 @@ public class UserService {
     private final UserMapper userMapper;
 
     public List<UserResponse> findAll() {
-        return userRepository.findAll().stream().map(userMapper::toResponse).toList();
+        return userMapper.toResponses(userRepository.findAll());
     }
 
     public UserResponse findById(Long id) {

@@ -1,71 +1,43 @@
 package hexlet.code.app.dto.task;
 
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
-import jakarta.validation.constraints.Size;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import hexlet.code.app.dto.PatchField;
+import jakarta.validation.constraints.AssertTrue;
 import java.util.List;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class TaskUpdateRequest {
 
-    private Integer index;
+    private PatchField<Integer> index = PatchField.undefined();
 
-    private Long assigneeId;
+    @JsonProperty("assignee_id")
+    private PatchField<Long> assigneeId = PatchField.undefined();
 
-    @Size(min = 1) private String title;
+    private PatchField<String> title = PatchField.undefined();
 
-    private String content;
+    private PatchField<String> content = PatchField.undefined();
 
-    @Size(min = 1) private String status;
+    private PatchField<String> status = PatchField.undefined();
 
-    private List<Long> taskLabelIds;
+    private PatchField<List<Long>> taskLabelIds = PatchField.undefined();
 
-    private boolean indexPresent;
-
-    private boolean assigneeIdPresent;
-
-    private boolean titlePresent;
-
-    private boolean contentPresent;
-
-    private boolean statusPresent;
-
-    private boolean taskLabelIdsPresent;
-
-    @JsonSetter
-    public void setIndex(Integer index) {
-        this.index = index;
-        this.indexPresent = true;
+    @AssertTrue(message = "title must be non-empty when present") public boolean isTitleValid() {
+        return isNonEmpty(title);
     }
 
-    @JsonSetter("assignee_id")
-    public void setAssigneeId(Long assigneeId) {
-        this.assigneeId = assigneeId;
-        this.assigneeIdPresent = true;
+    @AssertTrue(message = "status must be non-empty when present") public boolean isStatusValid() {
+        return isNonEmpty(status);
     }
 
-    @JsonSetter(nulls = Nulls.FAIL)
-    public void setTitle(String title) {
-        this.title = title;
-        this.titlePresent = true;
+    @AssertTrue(message = "taskLabelIds must not be null when present") public boolean isTaskLabelIdsValid() {
+        return !taskLabelIds.isPresent() || taskLabelIds.orElse(null) != null;
     }
 
-    @JsonSetter
-    public void setContent(String content) {
-        this.content = content;
-        this.contentPresent = true;
-    }
-
-    @JsonSetter(nulls = Nulls.FAIL)
-    public void setStatus(String status) {
-        this.status = status;
-        this.statusPresent = true;
-    }
-
-    @JsonSetter(nulls = Nulls.FAIL)
-    public void setTaskLabelIds(List<Long> taskLabelIds) {
-        this.taskLabelIds = taskLabelIds;
-        this.taskLabelIdsPresent = true;
+    private boolean isNonEmpty(PatchField<String> field) {
+        var value = field.orElse(null);
+        return !field.isPresent() || value != null && !value.isEmpty();
     }
 }

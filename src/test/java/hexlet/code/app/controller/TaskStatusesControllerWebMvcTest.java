@@ -56,10 +56,6 @@ class TaskStatusesControllerWebMvcTest {
     }
 
     private TaskStatusResponse taskStatusResponse(Long id, String name, String slug) {
-        var response = new TaskStatusResponse();
-        response.setId(id);
-        response.setName(name);
-        response.setSlug(slug);
-        return response;
+        return new TaskStatusResponse(id, name, slug, null);
     }
 }
