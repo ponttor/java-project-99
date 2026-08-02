@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.LinkedHashSet;
 
+import hexlet.code.app.config.JpaConfig;
 import hexlet.code.app.dto.task.TaskFilterParams;
 import hexlet.code.app.model.Label;
 import hexlet.code.app.model.Task;
@@ -18,7 +19,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
 @DataJpaTest
-@Import(TaskSpecification.class)
+@Import({JpaConfig.class, TaskSpecification.class})
 class TaskRepositoryJpaTest {
 
     @Autowired

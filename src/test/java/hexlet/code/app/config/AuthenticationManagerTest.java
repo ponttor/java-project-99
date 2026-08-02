@@ -3,36 +3,39 @@ package hexlet.code.app.config;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import hexlet.code.app.repository.UserRepository;
-import hexlet.code.app.util.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-@SpringBootTest
 class AuthenticationManagerTest {
 
     private static final String EMAIL = "ivan@google.com";
     private static final String PASSWORD = "some-password";
 
-    @Autowired
     private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private TestDataFactory testDataFactory;
 
     @BeforeEach
     void setUp() {
-        userRepository.deleteAll();
-
-        userRepository.save(testDataFactory.userWithPassword(EMAIL, PASSWORD));
+        var passwordEncoder = new BCryptPasswordEncoder();
+        var user = User.withUsername(EMAIL)
+                .password(passwordEncoder.encode(PASSWORD))
+                .authorities(java.util.List.of())
+                .build();
+        UserDetailsService userDetailsService = email -> {
+            if (!EMAIL.equals(email)) {
+                throw new UsernameNotFoundException("User not found");
+            }
+            return user;
+        };
+        var securityConfig = new SecurityConfig();
+        var provider = securityConfig.authenticationProvider(userDetailsService, passwordEncoder);
+        authenticationManager = securityConfig.authenticationManager(provider);
     }
 
     @Test
