@@ -1,8 +1,13 @@
 FROM gradle:jdk21 AS build
 WORKDIR /app
-COPY . .
+
+COPY gradlew build.gradle settings.gradle ./
+COPY gradle ./gradle
+RUN ./gradlew dependencies --no-daemon
+
+COPY src ./src
 ARG SENTRY_AUTH_TOKEN
-RUN ./gradlew build
+RUN ./gradlew build --no-daemon
 
 FROM eclipse-temurin:21-jre
 WORKDIR /app
