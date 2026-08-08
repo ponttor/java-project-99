@@ -2,6 +2,7 @@ package hexlet.code.app.controller;
 
 import hexlet.code.app.dto.auth.AuthRequest;
 import hexlet.code.app.service.JwtService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,7 +21,7 @@ public class AuthenticationController {
     private final JwtService jwtService;
 
     @PostMapping("/login")
-    public String login(@RequestBody AuthRequest request) {
+    public String login(@Valid @RequestBody AuthRequest request) {
         var authenticationRequest = UsernamePasswordAuthenticationToken.unauthenticated(request.getUsername(),
                 request.getPassword());
         var authentication = authenticationManager.authenticate(authenticationRequest);

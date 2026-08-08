@@ -3,6 +3,7 @@ package hexlet.code.app.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -52,5 +53,19 @@ class AuthenticationControllerWebMvcTest {
         assertThat(captor.getValue().getPrincipal()).isEqualTo("user@example.com");
         assertThat(captor.getValue().getCredentials()).isEqualTo("password");
         verify(jwtService).generateToken("user@example.com");
+    }
+
+    @Test
+    void shouldRejectInvalidCredentialsBeforeAuthentication() throws Exception {
+        mockMvc.perform(post("/api/login").contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(post("/api/login").contentType(MediaType.APPLICATION_JSON).content("""
+                {
+                  "username": "not-an-email",
+                  "password": " "
+                }
+                """)).andExpect(status().isBadRequest());
+
+        verifyNoInteractions(authenticationManager, jwtService);
     }
 }
