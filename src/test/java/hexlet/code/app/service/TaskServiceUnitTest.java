@@ -22,6 +22,7 @@ import hexlet.code.app.repository.TaskRepository;
 import hexlet.code.app.repository.TaskStatusRepository;
 import hexlet.code.app.repository.UserRepository;
 import hexlet.code.app.specification.TaskSpecification;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import org.instancio.Instancio;
@@ -78,6 +79,34 @@ class TaskServiceUnitTest {
         assertThat(task.getIndex()).isEqualTo(3);
         verify(taskMapper).update(request, task);
         verifyNoInteractions(taskStatusRepository, userRepository, labelRepository);
+    }
+
+    @Test
+    void shouldReplaceAllTaskRelations() {
+        var oldAssignee = user(10L);
+        var oldStatus = taskStatus(3L, "draft");
+        var oldLabel = label(4L);
+        var task = Instancio.of(Task.class).set(field(Task::getTaskStatus), oldStatus)
+                .set(field(Task::getAssignee), oldAssignee)
+                .set(field(Task::getLabels), new LinkedHashSet<>(List.of(oldLabel))).create();
+        var request = Instancio.createBlank(TaskCreateRequest.class);
+        request.setStatus("published");
+        request.setTaskLabelIds(List.of());
+        var newStatus = taskStatus(5L, "published");
+        var response = Instancio.create(TaskResponse.class);
+        when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
+        when(taskStatusRepository.findBySlug("published")).thenReturn(Optional.of(newStatus));
+        when(taskRepository.save(task)).thenReturn(task);
+        when(taskMapper.toResponse(task)).thenReturn(response);
+
+        var result = taskService.replace(1L, request);
+
+        assertThat(result).isSameAs(response);
+        assertThat(task.getTaskStatus()).isSameAs(newStatus);
+        assertThat(task.getAssignee()).isNull();
+        assertThat(task.getLabels()).isEmpty();
+        verify(taskMapper).replace(request, task);
+        verifyNoInteractions(userRepository);
     }
 
     @Test

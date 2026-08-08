@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -20,7 +21,6 @@ import hexlet.code.app.repository.UserRepository;
 import hexlet.code.app.util.ModelGenerator;
 import java.util.List;
 import java.util.Map;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,11 +29,13 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @WithMockUser
+@Transactional
 class TasksControllerTest {
 
     @Autowired
@@ -72,11 +74,6 @@ class TasksControllerTest {
         assignee = userRepository.save(modelGenerator.user("worker@example.com"));
     }
 
-    @AfterEach
-    void tearDown() {
-        taskRepository.deleteAll();
-    }
-
     @Test
     void shouldCreateTask() throws Exception {
         var request = Map.of("index", 12, "assignee_id", assignee.getId(), "title", "Test title", "content",
@@ -109,12 +106,13 @@ class TasksControllerTest {
 
         var taskId = objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asLong();
 
-        mockMvc.perform(put("/api/tasks/{id}", taskId).contentType("application/json")
+        mockMvc.perform(patch("/api/tasks/{id}", taskId).contentType("application/json")
                 .content(objectMapper.writeValueAsString(Map.of("taskLabelIds", List.of(feature.getId())))))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.taskLabelIds", hasSize(1)))
                 .andExpect(jsonPath("$.taskLabelIds[0]").value(feature.getId()));
 
-        mockMvc.perform(put("/api/tasks/{id}", taskId).contentType("application/json").content("{\"taskLabelIds\":[]}"))
+        mockMvc.perform(
+                patch("/api/tasks/{id}", taskId).contentType("application/json").content("{\"taskLabelIds\":[]}"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.taskLabelIds", hasSize(0)));
     }
 
@@ -231,7 +229,7 @@ class TasksControllerTest {
         var newAssignee = userRepository.save(modelGenerator.user("new-worker@example.com"));
         var request = Map.of("title", "New title", "status", published.getSlug(), "assignee_id", newAssignee.getId());
 
-        mockMvc.perform(put("/api/tasks/{id}", task.getId()).contentType("application/json")
+        mockMvc.perform(patch("/api/tasks/{id}", task.getId()).contentType("application/json")
                 .content(objectMapper.writeValueAsString(request))).andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("New title")).andExpect(jsonPath("$.content").value("Old content"))
                 .andExpect(jsonPath("$.index").value(5)).andExpect(jsonPath("$.status").value("published"))
@@ -242,7 +240,7 @@ class TasksControllerTest {
     void shouldClearOptionalTaskFields() throws Exception {
         var task = taskRepository.save(modelGenerator.task("Task", "Content", taskStatus, assignee, 5));
 
-        mockMvc.perform(put("/api/tasks/{id}", task.getId()).contentType("application/json").content("""
+        mockMvc.perform(patch("/api/tasks/{id}", task.getId()).contentType("application/json").content("""
                 {
                     "index": null,
                     "assignee_id": null,
@@ -251,6 +249,22 @@ class TasksControllerTest {
                 """)).andExpect(status().isOk()).andExpect(jsonPath("$.title").value("Task"))
                 .andExpect(jsonPath("$.index").isEmpty()).andExpect(jsonPath("$.assignee_id").isEmpty())
                 .andExpect(jsonPath("$.content").isEmpty());
+    }
+
+    @Test
+    void shouldReplaceTaskCompletely() throws Exception {
+        var label = labelRepository.save(modelGenerator.label("old label"));
+        var task = taskRepository.save(modelGenerator.taskWithLabels("Old title", taskStatus, assignee, label));
+        task.setDescription("Old content");
+        task.setIndex(5);
+        taskRepository.save(task);
+        var request = Map.of("title", "New title", "status", taskStatus.getSlug(), "taskLabelIds", List.of());
+
+        mockMvc.perform(put("/api/tasks/{id}", task.getId()).contentType("application/json")
+                .content(objectMapper.writeValueAsString(request))).andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("New title")).andExpect(jsonPath("$.content").isEmpty())
+                .andExpect(jsonPath("$.index").isEmpty()).andExpect(jsonPath("$.assignee_id").isEmpty())
+                .andExpect(jsonPath("$.taskLabelIds", hasSize(0)));
     }
 
     @Test
@@ -269,6 +283,8 @@ class TasksControllerTest {
         mockMvc.perform(get("/api/tasks/{id}", 999)).andExpect(status().isUnauthorized());
         mockMvc.perform(post("/api/tasks").contentType("application/json").content("{}"))
                 .andExpect(status().isUnauthorized());
+        mockMvc.perform(patch("/api/tasks/{id}", 999).contentType("application/json").content("{}"))
+                .andExpect(status().isUnauthorized());
         mockMvc.perform(put("/api/tasks/{id}", 999).contentType("application/json").content("{}"))
                 .andExpect(status().isUnauthorized());
         mockMvc.perform(delete("/api/tasks/{id}", 999)).andExpect(status().isUnauthorized());
@@ -284,14 +300,13 @@ class TasksControllerTest {
 
         var task = taskRepository.save(modelGenerator.task("Task", taskStatus));
         mockMvc.perform(
-                put("/api/tasks/{id}", task.getId()).contentType("application/json").content("{\"title\":null}"))
+                patch("/api/tasks/{id}", task.getId()).contentType("application/json").content("{\"title\":null}"))
                 .andExpect(status().isBadRequest());
         mockMvc.perform(
-                put("/api/tasks/{id}", task.getId()).contentType("application/json").content("{\"status\":null}"))
+                patch("/api/tasks/{id}", task.getId()).contentType("application/json").content("{\"status\":null}"))
                 .andExpect(status().isBadRequest());
-        mockMvc.perform(
-                put("/api/tasks/{id}", task.getId()).contentType("application/json").content("{\"taskLabelIds\":null}"))
-                .andExpect(status().isBadRequest());
+        mockMvc.perform(patch("/api/tasks/{id}", task.getId()).contentType("application/json")
+                .content("{\"taskLabelIds\":null}")).andExpect(status().isBadRequest());
 
         mockMvc.perform(post("/api/tasks").contentType("application/json").content("{\"title\":\"Task\"}"))
                 .andExpect(status().isBadRequest());
@@ -303,7 +318,7 @@ class TasksControllerTest {
     @Test
     void shouldReturnNotFoundForMissingTask() throws Exception {
         mockMvc.perform(get("/api/tasks/{id}", 999)).andExpect(status().isNotFound());
-        mockMvc.perform(put("/api/tasks/{id}", 999).contentType("application/json").content("{}"))
+        mockMvc.perform(patch("/api/tasks/{id}", 999).contentType("application/json").content("{}"))
                 .andExpect(status().isNotFound());
         mockMvc.perform(delete("/api/tasks/{id}", 999)).andExpect(status().isNotFound());
     }
@@ -323,10 +338,10 @@ class TasksControllerTest {
     void shouldReturnNotFoundForMissingRelationsOnUpdate() throws Exception {
         var task = taskRepository.save(modelGenerator.task("Task", null, taskStatus, assignee, null));
 
-        mockMvc.perform(put("/api/tasks/{id}", task.getId()).contentType("application/json")
+        mockMvc.perform(patch("/api/tasks/{id}", task.getId()).contentType("application/json")
                 .content("{\"status\":\"missing\"}")).andExpect(status().isNotFound());
         mockMvc.perform(
-                put("/api/tasks/{id}", task.getId()).contentType("application/json").content("{\"assignee_id\":999}"))
+                patch("/api/tasks/{id}", task.getId()).contentType("application/json").content("{\"assignee_id\":999}"))
                 .andExpect(status().isNotFound());
     }
 

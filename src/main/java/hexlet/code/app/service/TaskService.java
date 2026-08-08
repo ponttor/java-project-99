@@ -89,6 +89,17 @@ public class TaskService {
         return taskMapper.toResponse(taskRepository.save(task));
     }
 
+    public TaskResponse replace(Long id, TaskCreateRequest request) {
+        var task = findTask(id);
+
+        taskMapper.replace(request, task);
+        task.setTaskStatus(findTaskStatus(request.getStatus()));
+        task.setAssignee(request.getAssigneeId() == null ? null : findAssignee(request.getAssigneeId()));
+        task.setLabels(findLabels(request.getTaskLabelIds()));
+
+        return taskMapper.toResponse(taskRepository.save(task));
+    }
+
     public void delete(Long id) {
         taskRepository.delete(findTask(id));
     }

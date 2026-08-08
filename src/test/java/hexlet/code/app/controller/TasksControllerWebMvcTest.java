@@ -3,9 +3,11 @@ package hexlet.code.app.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -65,11 +67,32 @@ class TasksControllerWebMvcTest {
         mockMvc.perform(post("/api/tasks").contentType(MediaType.APPLICATION_JSON)
                 .content("{\"title\":\"Task\",\"status\":\"draft\",\"taskLabelIds\":[]}"))
                 .andExpect(status().isCreated());
-        mockMvc.perform(put("/api/tasks/{id}", 1).contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(patch("/api/tasks/{id}", 1).contentType(MediaType.APPLICATION_JSON)
                 .content("{\"title\":\"Updated task\"}")).andExpect(status().isOk());
         mockMvc.perform(delete("/api/tasks/{id}", 1)).andExpect(status().isNoContent());
 
         verify(taskService).delete(1L);
+    }
+
+    @Test
+    void shouldRouteFullTaskReplacement() throws Exception {
+        var response = taskResponse(1L, "Replaced task");
+        when(taskService.replace(any(Long.class), any(TaskCreateRequest.class))).thenReturn(response);
+
+        mockMvc.perform(put("/api/tasks/{id}", 1).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"title\":\"Replaced task\",\"status\":\"draft\",\"taskLabelIds\":[]}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.title").value("Replaced task"));
+
+        verify(taskService).replace(any(Long.class), any(TaskCreateRequest.class));
+    }
+
+    @Test
+    void shouldRejectIncompleteTaskReplacement() throws Exception {
+        mockMvc.perform(
+                put("/api/tasks/{id}", 1).contentType(MediaType.APPLICATION_JSON).content("{\"taskLabelIds\":[]}"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(taskService);
     }
 
     private TaskResponse taskResponse(Long id, String title) {

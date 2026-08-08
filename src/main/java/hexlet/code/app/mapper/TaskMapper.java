@@ -44,6 +44,15 @@ public abstract class TaskMapper {
     @Mapping(target = "createdAt", ignore = true)
     public abstract void update(TaskUpdateRequest request, @MappingTarget Task task);
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "name", source = "title")
+    @Mapping(target = "description", source = "content")
+    @Mapping(target = "taskStatus", ignore = true)
+    @Mapping(target = "assignee", ignore = true)
+    @Mapping(target = "labels", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    public abstract void replace(TaskCreateRequest request, @MappingTarget Task task);
+
     public List<Long> mapLabelIds(Set<Label> labels) {
         return labels.stream().map(Label::getId).toList();
     }
