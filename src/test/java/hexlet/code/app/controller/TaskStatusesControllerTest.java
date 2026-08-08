@@ -15,6 +15,7 @@ import hexlet.code.app.component.DataInitializer;
 import hexlet.code.app.dto.taskstatus.TaskStatusCreateRequest;
 import hexlet.code.app.dto.taskstatus.TaskStatusUpdateRequest;
 import hexlet.code.app.model.TaskStatus;
+import hexlet.code.app.repository.TaskRepository;
 import hexlet.code.app.repository.TaskStatusRepository;
 import hexlet.code.app.util.ModelGenerator;
 import org.instancio.Instancio;
@@ -43,6 +44,9 @@ class TaskStatusesControllerTest {
     private TaskStatusRepository taskStatusRepository;
 
     @Autowired
+    private TaskRepository taskRepository;
+
+    @Autowired
     private DataInitializer dataInitializer;
 
     @Autowired
@@ -50,6 +54,7 @@ class TaskStatusesControllerTest {
 
     @BeforeEach
     void setUp() {
+        taskRepository.deleteAll();
         taskStatusRepository.deleteAll();
     }
 

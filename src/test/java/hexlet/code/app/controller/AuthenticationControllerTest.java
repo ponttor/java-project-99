@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import hexlet.code.app.repository.TaskRepository;
 import hexlet.code.app.repository.UserRepository;
 import hexlet.code.app.util.ModelGenerator;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +30,9 @@ class AuthenticationControllerTest {
     private UserRepository userRepository;
 
     @Autowired
+    private TaskRepository taskRepository;
+
+    @Autowired
     private ModelGenerator modelGenerator;
 
     @Autowired
@@ -36,6 +40,7 @@ class AuthenticationControllerTest {
 
     @BeforeEach
     void setUp() {
+        taskRepository.deleteAll();
         userRepository.deleteAll();
 
         userRepository.save(modelGenerator.userWithPassword(EMAIL, PASSWORD));
