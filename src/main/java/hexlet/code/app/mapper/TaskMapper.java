@@ -13,7 +13,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-@Mapper(config = MapperConfiguration.class, uses = PatchFieldMapper.class)
+@Mapper(config = MapperConfiguration.class, uses = JsonNullableMapper.class)
 public abstract class TaskMapper {
 
     @Mapping(target = "title", source = "name")

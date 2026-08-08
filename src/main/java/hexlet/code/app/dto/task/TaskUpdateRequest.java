@@ -1,43 +1,27 @@
 package hexlet.code.app.dto.task;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import hexlet.code.app.dto.PatchField;
-import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+import org.openapitools.jackson.nullable.JsonNullable;
 
 @Getter
 @Setter
 public class TaskUpdateRequest {
 
-    private PatchField<Integer> index = PatchField.undefined();
+    private JsonNullable<Integer> index = JsonNullable.undefined();
 
     @JsonProperty("assignee_id")
-    private PatchField<Long> assigneeId = PatchField.undefined();
+    private JsonNullable<Long> assigneeId = JsonNullable.undefined();
 
-    private PatchField<String> title = PatchField.undefined();
+    @NotBlank private JsonNullable<String> title = JsonNullable.undefined();
 
-    private PatchField<String> content = PatchField.undefined();
+    private JsonNullable<String> content = JsonNullable.undefined();
 
-    private PatchField<String> status = PatchField.undefined();
+    @NotBlank private JsonNullable<String> status = JsonNullable.undefined();
 
-    private PatchField<List<Long>> taskLabelIds = PatchField.undefined();
-
-    @AssertTrue(message = "title must be non-empty when present") public boolean isTitleValid() {
-        return isNonEmpty(title);
-    }
-
-    @AssertTrue(message = "status must be non-empty when present") public boolean isStatusValid() {
-        return isNonEmpty(status);
-    }
-
-    @AssertTrue(message = "taskLabelIds must not be null when present") public boolean isTaskLabelIdsValid() {
-        return !taskLabelIds.isPresent() || taskLabelIds.orElse(null) != null;
-    }
-
-    private boolean isNonEmpty(PatchField<String> field) {
-        var value = field.orElse(null);
-        return !field.isPresent() || value != null && !value.isEmpty();
-    }
+    @NotNull private JsonNullable<List<Long>> taskLabelIds = JsonNullable.undefined();
 }
