@@ -32,7 +32,7 @@ class UserServiceUnitTest {
     private UserMapper userMapper;
 
     @InjectMocks
-    private UserService userService;
+    private UserServiceImpl userService;
 
     @Test
     void shouldEncodePasswordWhenCreatingUser() {
