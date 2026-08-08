@@ -63,25 +63,33 @@ class LabelsControllerTest {
     }
 
     @Test
-    void shouldCreateShowAndListLabels() throws Exception {
+    void shouldCreateLabel() throws Exception {
         var request = Map.of("name", "new label");
 
-        var result = mockMvc
-                .perform(post("/api/labels").contentType("application/json")
-                        .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(
+                post("/api/labels").contentType("application/json").content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.name").value("new label")).andExpect(jsonPath("$.createdAt").exists())
-                .andReturn();
-
-        var id = objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asLong();
-
-        mockMvc.perform(get("/api/labels/{id}", id)).andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("new label"));
-
-        mockMvc.perform(get("/api/labels")).andExpect(status().isOk()).andExpect(header().string("X-Total-Count", "1"))
-                .andExpect(jsonPath("$", hasSize(1)));
+                .andExpect(jsonPath("$.name").value("new label")).andExpect(jsonPath("$.createdAt").exists());
 
         assertThat(labelRepository.findByName("new label")).isPresent();
+    }
+
+    @Test
+    void shouldShowLabel() throws Exception {
+        var label = labelRepository.save(modelGenerator.label("new label"));
+
+        mockMvc.perform(get("/api/labels/{id}", label.getId())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(label.getId())).andExpect(jsonPath("$.name").value("new label"))
+                .andExpect(jsonPath("$.createdAt").exists());
+    }
+
+    @Test
+    void shouldListLabels() throws Exception {
+        labelRepository.save(modelGenerator.label("first label"));
+        labelRepository.save(modelGenerator.label("second label"));
+
+        mockMvc.perform(get("/api/labels")).andExpect(status().isOk()).andExpect(header().string("X-Total-Count", "2"))
+                .andExpect(jsonPath("$", hasSize(2)));
     }
 
     @Test
