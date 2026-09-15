@@ -29,7 +29,7 @@ class LabelServiceUnitTest {
     private LabelMapper labelMapper;
 
     @InjectMocks
-    private LabelService labelService;
+    private LabelServiceImpl labelService;
 
     @Test
     void shouldTranslateDeleteConstraintViolationIntoResourceConflict() {

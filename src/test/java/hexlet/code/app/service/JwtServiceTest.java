@@ -23,7 +23,7 @@ class JwtServiceTest {
     void setUp() {
         var jwtConfig = new JwtConfig();
         var secretKey = jwtConfig.jwtSecretKey(SECRET);
-        jwtService = new JwtService(jwtConfig.jwtEncoder(secretKey));
+        jwtService = new JwtServiceImpl(jwtConfig.jwtEncoder(secretKey));
         jwtDecoder = jwtConfig.jwtDecoder(secretKey);
     }
 

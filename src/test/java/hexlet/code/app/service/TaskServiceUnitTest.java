@@ -55,7 +55,7 @@ class TaskServiceUnitTest {
     private TaskSpecification taskSpecification;
 
     @InjectMocks
-    private TaskService taskService;
+    private TaskServiceImpl taskService;
 
     @Test
     void shouldUpdateOnlyFieldsPresentInRequest() {
